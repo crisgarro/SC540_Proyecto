@@ -8,7 +8,7 @@ CREATE TABLE Users (
   LastName NVARCHAR2(50),
   Address NVARCHAR2(255),
   Phone NVARCHAR2(15)
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Roles
 CREATE TABLE Roles (
@@ -21,7 +21,7 @@ CREATE TABLE User_Roles (
   User_RoleID NUMBER PRIMARY KEY,
   UserID NUMBER,
   RoleID NUMBER
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Products
 CREATE TABLE Products (
@@ -31,23 +31,23 @@ CREATE TABLE Products (
   Price NUMBER(10, 2) NOT NULL,
   StockQuantity NUMBER NOT NULL,
   CategoryID NUMBER
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Categories
 CREATE TABLE Categories (
   CategoryID NUMBER PRIMARY KEY,
   CategoryName NVARCHAR2(50) NOT NULL
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Product_Reviews
 CREATE TABLE Product_Reviews (
   ReviewID NUMBER PRIMARY KEY,
   UserID NUMBER,
   ProductID NUMBER,
-  Rating NUMBER(2, 1) NOT NULL,
-  Comment NVARCHAR2(255),
+  Rating NUMBER(3, 1) NOT NULL,
+  Comments NVARCHAR2(255),
   Timestamp TIMESTAMP
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Orders
 CREATE TABLE Orders (
@@ -57,7 +57,7 @@ CREATE TABLE Orders (
   TotalAmount NUMBER(10, 2),
   PaymentMethodID NUMBER,
   ShippingMethodID NUMBER
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Order_Items
 CREATE TABLE Order_Items (
@@ -66,26 +66,26 @@ CREATE TABLE Order_Items (
   ProductID NUMBER,
   Quantity NUMBER NOT NULL,
   Subtotal NUMBER(10, 2)
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Payment_Methods
 CREATE TABLE Payment_Methods (
   PaymentMethodID NUMBER PRIMARY KEY,
   PaymentMethodName NVARCHAR2(50) NOT NULL
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Shipping_Methods
 CREATE TABLE Shipping_Methods (
   ShippingMethodID NUMBER PRIMARY KEY,
   ShippingMethodName NVARCHAR2(50) NOT NULL,
   ShippingCost NUMBER(10, 2)
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Cart
 CREATE TABLE Cart (
   CartID NUMBER PRIMARY KEY,
   UserID NUMBER
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Cart_Items
 CREATE TABLE Cart_Items (
@@ -93,7 +93,7 @@ CREATE TABLE Cart_Items (
   CartID NUMBER,
   ProductID NUMBER,
   Quantity NUMBER NOT NULL
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Promotions
 CREATE TABLE Promotions (
@@ -102,14 +102,14 @@ CREATE TABLE Promotions (
   DiscountAmount NUMBER(10, 2) NOT NULL,
   StartDate DATE,
   EndDate DATE
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Applied_Promotions
 CREATE TABLE Applied_Promotions (
   AppliedPromotionID NUMBER PRIMARY KEY,
   OrderID NUMBER,
   PromotionID NUMBER
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Notifications
 CREATE TABLE Notifications (
@@ -117,14 +117,14 @@ CREATE TABLE Notifications (
   UserID NUMBER,
   Message NVARCHAR2(255),
   Timestamp TIMESTAMP
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Rewards
 CREATE TABLE Rewards (
   RewardID NUMBER PRIMARY KEY,
   UserID NUMBER,
   Points NUMBER NOT NULL
-);
+) TABLESPACE CravyPizzaHuB;
 
 -- Agregar restricciones de clave foránea
 ALTER TABLE User_Roles ADD CONSTRAINT fk_User_Roles_UserID FOREIGN KEY (UserID) REFERENCES Users(UserID);
