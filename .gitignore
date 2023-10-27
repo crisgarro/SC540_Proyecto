@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Archivos Random
-*dtbcache.v2
+*.v2
