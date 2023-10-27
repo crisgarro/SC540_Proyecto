@@ -1,56 +1,48 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using System.Data;
+using Backend.Settings;
+using Microsoft.Extensions.Options;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Backend
 {
-    internal class OracleConnectionManager
+    public class OracleConnectionManager : IDisposable, IAsyncDisposable
     {
-        private readonly string _connectionString;
-        private OracleConnection _connection;
+        private readonly OracleConnection _connection;
 
-        public OracleConnectionManager()
+        public OracleConnectionManager(IOptions<OracleConnectionSettings> connectionSettings)
         {
-            // Configura la cadena de conexión
-            string username = "CravyDev";
-            string password = "abcd1234";
-            string hostname = "localhost";
-            int port = 1521;
-            string sid = "ORCLCDB";
+            var settings = connectionSettings.Value;
+            var connectionString = $"User Id={settings.UserName};Password={settings.Password};" +
+                                   $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={settings.HostName})" +
+                                   $"(PORT={settings.Port}))(CONNECT_DATA=(SID={settings.SID})))";
 
-            _connectionString = $"User Id={username};Password={password};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={hostname})(PORT={port}))(CONNECT_DATA=(SID={sid})))";
-        }
-
-        public void OpenConnection()
-        {
-            try
-            {
-                if (_connection == null)
-                {
-                    _connection = new OracleConnection(_connectionString);
-                }
-
-                if (_connection.State != System.Data.ConnectionState.Open)
-                {
-                    _connection.Open();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.Write(e.Message + "\n");
-            }
-        }
-
-        public void CloseConnection()
-        {
-            if (_connection != null && _connection.State == System.Data.ConnectionState.Open)
-            {
-                _connection.Close();
-            }
+            _connection ??= new OracleConnection(connectionString);
         }
 
         public OracleConnection GetConnection()
         {
-            OpenConnection();
+            _connection.Open();
             return _connection;
+        }
+
+        public void Dispose()
+        {
+            CheckConnectionOpen();
+            _connection.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            CheckConnectionOpen();
+            await _connection.DisposeAsync();
+        }
+
+        private void CheckConnectionOpen()
+        {
+            if (_connection.State == ConnectionState.Open)
+            {
+                _connection.Close();
+            }
         }
     }
 }

@@ -15,39 +15,46 @@ namespace Backend.Services
 
         public List<UserModel> GetAllUsers()
         {
-            List<UserModel> users = new List<UserModel>();
-
-            using (OracleCommand command = new OracleCommand("GetAllUsers", _connection))
+            try
             {
-                command.CommandType = System.Data.CommandType.StoredProcedure;
+                List<UserModel> users = new List<UserModel>();
 
-                // Add any input parameters if needed
-                // command.Parameters.Add("parameterName", OracleDbType.DataType).Value = value;
-                command.Parameters.Add("cv_results", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
-
-                using (OracleDataReader reader = command.ExecuteReader())
+                using (OracleCommand command = new OracleCommand("GetAllUsers", _connection))
                 {
-                    while (reader.Read())
-                    {
-                        UserModel user = new UserModel
-                        {
-                            UserID = Convert.ToInt32(reader["UserID"]),
-                            Username = reader["Username"].ToString(),
-                            Password = reader["Password"].ToString(),
-                            Email = reader["Email"].ToString(),
-                            FirstName = reader["FirstName"].ToString(),
-                            LastName = reader["LastName"].ToString(),
-                            Address = reader["Address"].ToString(),
-                            Phone = reader["Phone"].ToString()
-                        };
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        users.Add(user);
+                    // Add any input parameters if needed
+                    // command.Parameters.Add("parameterName", OracleDbType.DataType).Value = value;
+                    command.Parameters.Add("p_users", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+                    using (OracleDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            UserModel user = new UserModel
+                            {
+                                UserID = Convert.ToInt32(reader["UserID"]),
+                                Username = reader["Username"].ToString(),
+                                Password = reader["Password"].ToString(),
+                                Email = reader["Email"].ToString(),
+                                FirstName = reader["FirstName"].ToString(),
+                                LastName = reader["LastName"].ToString(),
+                                Address = reader["Address"].ToString(),
+                                Phone = reader["Phone"].ToString()
+                            };
+
+                            users.Add(user);
+                        }
                     }
                 }
-            }
-            _connection.Close();
+                _connection.Close();
 
-            return users;
+                return users;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

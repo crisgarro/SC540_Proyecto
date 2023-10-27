@@ -1,18 +1,56 @@
-﻿using Backend.Models;
+﻿using Backend.Interfaces;
+using Backend.Models;
+using Oracle.ManagedDataAccess.Client;
+using Backend.Settings;
+using System.Data;
+using Microsoft.Extensions.Options;
 
 namespace Backend.Services
 {
     public class UserService
     {
-        public static async Task<UserModel?> GetUser()
+        private readonly IOptions<OracleConnectionSettings> _connectionSettings;
+
+        public UserService(IOptions<OracleConnectionSettings> connectionSettings)
         {
-            OracleConnectionManager manager = new OracleConnectionManager();
-            UserRepository userRepository = new UserRepository(manager.GetConnection());
+            _connectionSettings = connectionSettings;
+        }
 
-            List<UserModel> users = userRepository.GetAllUsers();
+        public async Task<UserModel?> GetUser()
+        {
+            await using OracleConnectionManager manager = new OracleConnectionManager(_connectionSettings);
+            var users = new List<UserModel>();
 
-            // You can return the first user as an example
-            return users.FirstOrDefault();
+            await using (OracleCommand command = new OracleCommand("GetAllUsers", manager.GetConnection()))
+            {
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                // Agregar parametros necesarios
+                // command.Parameters.Add("parameterName", OracleDbType.DataType).Value = value;
+                command.Parameters.Add("p_users", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+                await using (OracleDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        UserModel user = new UserModel
+                        {
+                            UserID = Convert.ToInt32(reader["UserID"]),
+                            Username = reader["Username"].ToString(),
+                            Password = reader["Password"].ToString(),
+                            Email = reader["Email"].ToString(),
+                            FirstName = reader["FirstName"].ToString(),
+                            LastName = reader["LastName"].ToString(),
+                            Address = reader["Address"].ToString(),
+                            Phone = reader["Phone"].ToString()
+                        };
+
+                        users.Add(user);
+                    }
+                }
+
+                return users.FirstOrDefault();
+            }
         }
     }
 }

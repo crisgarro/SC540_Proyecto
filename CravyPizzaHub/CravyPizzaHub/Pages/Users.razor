@@ -1,11 +1,13 @@
 ﻿@page "/users"
 @using Backend.Models
 @using Backend.Services
+@using Backend.Settings
+@using Microsoft.Extensions.Options
 
 <MudContainer>
     <MudPaper Elevation="4">
         <!--MudTextField Label="Username" @bind-Value="username" /-->
-        <MudButton Color="Color.Primary" OnClick="GetUser">Get User</MudButton>
+        <MudButton Color="Color.Primary" OnClick="GetAllUser">Get User</MudButton>
     </MudPaper>
 
     @if (_users != null)
@@ -22,12 +24,26 @@
 </MudContainer>
 
 @code {
-    private UserModel? _users;
+    [Inject]
+    private IOptions<OracleConnectionSettings> ConnectionSettings { get; set; }
 
-    private async Task GetUser()
+    private UserModel? _users;
+    private UserService _service;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        if (_service == null)
+        {
+            _service = new UserService(ConnectionSettings);
+        }
+    }
+
+    private async Task GetAllUser()
     {
     // Replace this with your code to retrieve user information by username
-        _users = await UserService.GetUser();
+        _users = await _service.GetUser();
     }
 
 }
