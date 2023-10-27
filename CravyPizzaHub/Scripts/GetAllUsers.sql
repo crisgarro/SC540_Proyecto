@@ -1,0 +1,17 @@
+CREATE OR REPLACE PROCEDURE GetAllUsers (
+    p_users OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_users FOR
+    SELECT
+        USERS.USERID,
+        USERS.USERNAME,
+        USERS.PASSWORD,
+        USERS.EMAIL,
+        USERS.FIRSTNAME,
+        USERS.LASTNAME,
+        USERS.ADDRESS,
+        USERS.PHONE
+    FROM USERS;
+END;

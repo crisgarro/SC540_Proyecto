@@ -1,0 +1,34 @@
+﻿@page "/users"
+@using Backend.Models
+@using Backend.Services
+
+<MudContainer>
+    <MudPaper Elevation="4">
+        <!--MudTextField Label="Username" @bind-Value="username" /-->
+        <MudButton Color="Color.Primary" OnClick="GetUser">Get User</MudButton>
+    </MudPaper>
+
+    @if (_users != null)
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudTypography Typo="Typo.h5">User Details</MudTypography>
+                <MudText>Username: @_users.Username</MudText>
+                <MudText>Name: @_users.FirstName</MudText>
+                <MudText>Email: @_users.Email</MudText>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private UserModel? _users;
+
+    private async Task GetUser()
+    {
+    // Replace this with your code to retrieve user information by username
+        _users = await UserService.GetUser();
+    }
+
+}
+
