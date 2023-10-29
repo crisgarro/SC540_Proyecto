@@ -1,8 +1,6 @@
 ﻿@page "/users"
 @using Backend.Models
 @using Backend.Services
-@using Backend.Settings
-@using Microsoft.Extensions.Options
 
 <MudContainer>
     <MudPaper Elevation="4">
@@ -24,26 +22,14 @@
 </MudContainer>
 
 @code {
-    [Inject]
-    private IOptions<OracleConnectionSettings> ConnectionSettings { get; set; }
-
+    //Model de la base de Datos para Mostra Informacion
     private UserModel? _users;
-    private UserService _service;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        
-        if (_service == null)
-        {
-            _service = new UserService(ConnectionSettings);
-        }
-    }
+    private readonly UserService _service = new();
 
     private async Task GetAllUser()
     {
-    // Replace this with your code to retrieve user information by username
-        _users = await _service.GetUser();
+        //_users = await _service.GetAllUsers();
+        return;
     }
 
 }

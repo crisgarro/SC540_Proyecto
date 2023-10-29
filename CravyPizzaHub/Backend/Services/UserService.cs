@@ -1,23 +1,15 @@
 ﻿using Backend.Models;
 using Oracle.ManagedDataAccess.Client;
-using Backend.Settings;
 using System.Data;
-using Microsoft.Extensions.Options;
 
 namespace Backend.Services
 {
     public class UserService
     {
-        private readonly IOptions<OracleConnectionSettings> _connectionSettings;
 
-        public UserService(IOptions<OracleConnectionSettings> connectionSettings)
+        public async Task<List<UserModel>> GetAllUsers()
         {
-            _connectionSettings = connectionSettings;
-        }
-
-        public async Task<UserModel?> GetUser()
-        {
-            await using (OracleConnectionManager manager = new OracleConnectionManager(_connectionSettings))
+            await using (OracleConnectionManager manager = new())
             {
                 var users = new List<UserModel>();
 
@@ -48,7 +40,7 @@ namespace Backend.Services
                         }
                     }
 
-                    return users.FirstOrDefault();
+                    return users;
                 }
             }
         }

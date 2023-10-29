@@ -1,0 +1,25 @@
+﻿@using Backend.Models
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>Creacion de Usuario</DialogTitle>
+        <MudTextField Label="Nombre Usuario" @bind-Value="newUser.Username"/>
+        <MudTextField Label="Nombre" @bind-Value="newUser.FirstName" />
+        <MudTextField Label="Apellido" @bind-Value="newUser.LastName"/>
+        <MudTextField Label="Correo" @bind-Value="newUser.Email" />
+        <!--MudTextField Label="Contraseña"/-->
+        <!--MudTextField Label="Repetir Contraseña" /-->
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveUser">Guardar</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseAddUserDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+
+    private UserModel newUser = new UserModel();
+
+    void SaveUser() => Dialog.Close(DialogResult.Ok(true));
+    void CloseAddUserDialog() => Dialog.Cancel();
+}
