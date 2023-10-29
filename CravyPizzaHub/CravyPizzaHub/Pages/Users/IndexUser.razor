@@ -1,0 +1,67 @@
+﻿@page "/user_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administracion de Usuarios</MudText>
+    <MudText Class="mb-8">Aqui se desplegara una lista de los usuarios en el sistema</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddUserDialog">Agregar Usuario</MudButton>
+    <MudTable Items="_users" T="UserModel" Hover="true">
+        <HeaderContent>
+            <MudTh>Nombre Usuario</MudTh>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Apellido</MudTh>
+            <MudTh>Correo</MudTh>
+            <MudTh></MudTh> <!-- Empty header cell for buttons -->
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Username</MudTd>
+            <MudTd>@context.Email</MudTd>
+            <MudTd>@context.FirstName</MudTd>
+            <MudTd>@context.LastName</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditUser(context)">Editar</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DeleteUser(context)">Deshabilitar</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+
+    private List<UserModel> _users;
+    private readonly UserService _service = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await _service.GetAllUsers();
+        await base.OnInitializedAsync();
+    }
+
+    private void EditUser(UserModel user)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingUser", user }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        DialogService.Show<AddUser>("Dialog", parameters, options);
+    }
+
+    private void DeleteUser(UserModel user)
+    {
+    // Implement logic to delete the user
+    // You can confirm deletion and remove the user from the list
+    }
+
+    private void OpenAddUserDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        DialogService.Show<AddUser>("Dialog", options);
+    }
+
+}

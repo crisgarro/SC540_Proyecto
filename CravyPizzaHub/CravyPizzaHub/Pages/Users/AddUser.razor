@@ -1,0 +1,146 @@
+﻿@page "/user"
+@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Usuario" : "Crear Usuario")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <MudTextField Label="Nombre Usuario" @bind-Value="userModel.Username" HelperText="Max. 8 characters" RequiredError="Requerido!" Required="true"/>
+            <MudTextField Label="Nombre" @bind-Value="userModel.FirstName" Required="true" RequiredError="Requerido!"/>
+            <MudTextField Label="Apellido" @bind-Value="userModel.LastName" Required="true" RequiredError="Requerido!"/>
+            <MudTextField Label="Correo" @bind-Value="userModel.Email" Required="true" RequiredError="Email is required"
+                          Validation="@(new EmailAddressAttribute() { ErrorMessage = "La dirección de correo es inválida" })"/>
+            <MudTextField Label="Contraseña" @bind-Value="userModel.Password" HelperText="Debe utilizar una contraseña segura" @ref="_passwordFieldValidation"
+                          InputType="InputType.Password"
+                          Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
+                          RequiredError="Password is required!"/>
+            <MudTextField T="string" Label="Password" HelperText="Repita la contraseña " InputType="InputType.Password"
+                          Validation="@(new Func<string, string>(PasswordMatch))"/>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateUser : SaveUser)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseUserDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } //Indica si esta en modo edicion
+
+    [Parameter]
+    public UserModel ExistingUser { get; set; } // Usuario existente para Editar
+
+    private UserModel userModel;
+    private readonly UserService _service = new();
+
+    MudTextField<string> _passwordFieldValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            userModel = new UserModel
+            {
+                Username = ExistingUser.Username,
+                FirstName = ExistingUser.FirstName,
+                LastName = ExistingUser.LastName,
+                Email = ExistingUser.Email,
+            };
+        }
+        else
+        {
+            userModel = new UserModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveUser()
+    {
+        //Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta el usuario
+            var result = await _service.CreateUser(userModel);
+
+            //Verifica que la insercion sea correcta
+            if (result > 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                //Muestra un mensaje de error si el guardado fallo
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al salvar el usuario", cancelText: "Ok");
+            }
+        }
+    }
+
+    private async void UpdateUser()
+    {
+        // Implement update user logic for edit mode
+        // Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta el usuario
+            var result = await _service.UpdateUser(userModel);
+
+            //Verifica que la insercion sea correcta
+            DialogIntance.Close(DialogResult.Ok(true));
+            
+        }
+    }
+
+    private void CloseUserDialog()
+    {
+        DialogIntance.Cancel();
+    }
+
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "La contraseña es requerida!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "La contraseña debe contener al menos 8 caracteres";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "La contraseña debe contener al menos 1 letra en mayuscula";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "La contraseña debe contener al menos 1 letra en minuscula";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "La contraseña debe contener al menos 1 digito";
+    }
+
+    /// <summary>
+    /// Validate que la contraseña sea iugual
+    /// </summary>
+    /// <param name="arg">Argumento a validar</param>
+    /// <returns></returns>
+    private string PasswordMatch(string arg)
+    {
+        if (_passwordFieldValidation.Value != arg)
+            return "La contraseña no coincide";
+        return null;
+    }
+
+}
