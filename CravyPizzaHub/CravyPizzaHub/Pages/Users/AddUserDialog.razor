@@ -1,25 +1,120 @@
 ﻿@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
 
 <MudDialog Width="400px">
     <DialogContent>
         <DialogTitle>Creacion de Usuario</DialogTitle>
-        <MudTextField Label="Nombre Usuario" @bind-Value="newUser.Username"/>
-        <MudTextField Label="Nombre" @bind-Value="newUser.FirstName" />
-        <MudTextField Label="Apellido" @bind-Value="newUser.LastName"/>
-        <MudTextField Label="Correo" @bind-Value="newUser.Email" />
-        <!--MudTextField Label="Contraseña"/-->
-        <!--MudTextField Label="Repetir Contraseña" /-->
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <MudTextField Label="Nombre Usuario" @bind-Value="userModel.Username" HelperText="Max. 8 characters" RequiredError="Requerido!" Required="true" />
+            <MudTextField Label="Nombre" @bind-Value="userModel.FirstName" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Apellido" @bind-Value="userModel.LastName" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Correo" @bind-Value="userModel.Email" Required="true" RequiredError="Email is required!"
+                          Validation="@(new EmailAddressAttribute() { ErrorMessage = "La dirreccion de correo es invalida" })"/>
+            <MudTextField Label="Contraseña" @bind-Value="userModel.Password" HelperText="Debe de utilizar una contraseña segura" @ref="_passwordFieldValidation"
+                          InputType="InputType.Password"
+                          Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
+                          RequiredError="Password is required!"/>
+            <MudTextField T="string" Label="Password" HelperText="Repita la contraseña " InputType="InputType.Password"
+                          Validation="@(new Func<string, string>(PasswordMatch))"/>
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveUser">Guardar</MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseAddUserDialog">Cancelar</MudButton>
     </DialogActions>
 </MudDialog>
+
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
-    private UserModel newUser = new UserModel();
+    [Inject] private IDialogService DialogService { get; set; }
 
-    void SaveUser() => Dialog.Close(DialogResult.Ok(true));
-    void CloseAddUserDialog() => Dialog.Cancel();
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    
+    private UserModel userModel;
+    private readonly UserService _service = new();
+
+    MudTextField<string> _passwordFieldValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+
+    /// <summary>
+    /// Constructor de la clase
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        userModel = new UserModel();
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// Metodo para salvar el usuario
+    /// </summary>
+    private async void SaveUser()
+    {
+        //Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta el usuario
+            var result = await _service.CreateUser(userModel);
+
+            //Verifica que la insercion sea correcta
+            if (result > 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                //Muestra un mensaje de error si el guardado fallo
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al salvar el usuario", cancelText:"Ok");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cierra el Dialogo
+    /// </summary>
+    private void CloseAddUserDialog()
+    {
+        DialogIntance.Cancel();
+    }
+
+    //Valida la fortaleza de la contraseña
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "La contraseña es requerida!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "La contraseña debe contener al menos 8 caracteres";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "La contraseña debe contener al menos 1 letra en mayuscula";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "La contraseña debe contener al menos 1 letra en minuscula";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "La contraseña debe contener al menos 1 digito";
+    }
+
+    /// <summary>
+    /// Validate que la contraseña sea iugual
+    /// </summary>
+    /// <param name="arg">Argumento a validar</param>
+    /// <returns></returns>
+    private string PasswordMatch(string arg)
+    {
+        if (_passwordFieldValidation.Value != arg)
+            return "La contraseña no coincide";
+        return null;
+    }
+
 }
