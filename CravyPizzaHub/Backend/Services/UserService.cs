@@ -1,5 +1,6 @@
 ﻿using Backend.Models;
 using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using System.Data;
 
 namespace Backend.Services
@@ -71,7 +72,7 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> UpdateUser(UserModel updatedUser)
+        public async Task<UserModel> UpdateUser(UserModel updatedUser)
         {
             using (OracleConnectionManager manager = new())
             {
@@ -89,13 +90,40 @@ namespace Backend.Services
                     command.Parameters.Add("p_address", OracleDbType.Varchar2).Value = updatedUser.Address;
                     command.Parameters.Add("p_phone", OracleDbType.Varchar2).Value = updatedUser.Phone;
 
+                    // Output parameter for retrieving the updated user record
+                    command.Parameters.Add("p_updatedUser", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
                     await command.ExecuteNonQueryAsync();
 
-                    // You can check the return value or add error handling logic here
-                    // For example, return true if the update was successful, or false if it failed.
-                    return true;
+                    // Retrieve the updated user record from the output parameter
+                    UserModel updatedUserData = null;
+
+                    // Check if the output parameter contains data
+                    if (command.Parameters["p_updatedUser"].Value != DBNull.Value)
+                    {
+                        using (OracleDataReader reader = ((OracleRefCursor)command.Parameters["p_updatedUser"].Value).GetDataReader())
+                        {
+                            if (reader.Read())
+                            {
+                                updatedUserData = new UserModel
+                                {
+                                    UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
+                                    Username = reader.GetString(reader.GetOrdinal("Username")),
+                                    Password = reader.GetString(reader.GetOrdinal("Password")),
+                                    Email = reader.GetString(reader.GetOrdinal("Email")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    Address = reader.GetString(reader.GetOrdinal("Address")),
+                                    Phone = reader.GetString(reader.GetOrdinal("Phone"))
+                                };
+                            }
+                        }
+                    }
+
+                    return updatedUserData;
                 }
             }
         }
+
     }
 }
