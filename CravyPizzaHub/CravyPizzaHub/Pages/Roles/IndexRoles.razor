@@ -1,10 +1,10 @@
-﻿@page "/user_list"
+﻿@page "/role_list"
 @using Backend.Models
 @using Backend.Services
 @inject IDialogService DialogService
 
 <MudContainer>
-    <MudText Typo="Typo.h3" GutterBottom="true">Administracion de Usuarios</MudText>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administracion de Roles</MudText>
     <MudText Class="mb-8">Aqui se desplegara una lista de los usuarios en el sistema</MudText>
     <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddUserDialog">Agregar Usuario</MudButton>
     <MudTable Items="_users" T="UserModel" Hover="true">
@@ -16,7 +16,7 @@
             <MudTh></MudTh> <!-- Empty header cell for buttons -->
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@context.Username</MudTd>            
+            <MudTd>@context.Username</MudTd>
             <MudTd>@context.FirstName</MudTd>
             <MudTd>@context.LastName</MudTd>
             <MudTd>@context.Email</MudTd>
@@ -29,7 +29,6 @@
 </MudContainer>
 
 @code {
-
     private List<UserModel> _users;
     private readonly UserService _service = new();
 
@@ -48,20 +47,20 @@
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        DialogService.Show<AddUser>("Dialog", parameters, options);
+        //DialogService.Show<AddUser>("Dialog", parameters, options);
     }
 
     private void DeleteUser(UserModel user)
     {
-    // Implement logic to delete the user
-    // You can confirm deletion and remove the user from the list
+        // Implement logic to delete the user
+        // You can confirm deletion and remove the user from the list
     }
 
     private void OpenAddUserDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        DialogService.Show<AddUser>("Dialog", options);
+        //DialogService.Show<AddUser>("Dialog", options);
     }
 
 }
