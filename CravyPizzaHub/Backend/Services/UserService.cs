@@ -74,6 +74,7 @@ namespace Backend.Services
 
         public async Task<UserModel> UpdateUser(UserModel updatedUser)
         {
+            int isUpdated = 0;
             using (OracleConnectionManager manager = new())
             {
                 await using (OracleCommand command = new OracleCommand("UpdateUser", manager.GetConnection()))
@@ -81,49 +82,39 @@ namespace Backend.Services
                     command.CommandType = System.Data.CommandType.StoredProcedure;
 
                     // Input Parameters
-                    command.Parameters.Add("p_userId", OracleDbType.Int32).Value = updatedUser.UserID;
-                    command.Parameters.Add("p_username", OracleDbType.Varchar2).Value = updatedUser.Username;
-                    command.Parameters.Add("p_password", OracleDbType.Varchar2).Value = updatedUser.Password;
-                    command.Parameters.Add("p_email", OracleDbType.Varchar2).Value = updatedUser.Email;
-                    command.Parameters.Add("p_firstName", OracleDbType.Varchar2).Value = updatedUser.FirstName;
-                    command.Parameters.Add("p_lastName", OracleDbType.Varchar2).Value = updatedUser.LastName;
-                    command.Parameters.Add("p_address", OracleDbType.Varchar2).Value = updatedUser.Address;
-                    command.Parameters.Add("p_phone", OracleDbType.Varchar2).Value = updatedUser.Phone;
+                    command.Parameters.Add("pUserID", OracleDbType.Int32).Value = updatedUser.UserID;
+                    command.Parameters.Add("pUsername", OracleDbType.Varchar2).Value = updatedUser.Username;
+                    command.Parameters.Add("pPassword", OracleDbType.Varchar2).Value = updatedUser.Password;
+                    command.Parameters.Add("pEmail", OracleDbType.Varchar2).Value = updatedUser.Email;
+                    command.Parameters.Add("pFirstName", OracleDbType.Varchar2).Value = updatedUser.FirstName;
+                    command.Parameters.Add("pLastName", OracleDbType.Varchar2).Value = updatedUser.LastName;
+                    command.Parameters.Add("pAddress", OracleDbType.Varchar2).Value = updatedUser.Address;
+                    command.Parameters.Add("pPhone", OracleDbType.Varchar2).Value = updatedUser.Phone;
 
-                    // Output parameter for retrieving the updated user record
-                    command.Parameters.Add("p_updatedUser", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                    // Output parameter for retrieving the result of the update
+                    OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
+                    pIsUpdated.Direction = ParameterDirection.Output;
+                    command.Parameters.Add(pIsUpdated);
 
                     await command.ExecuteNonQueryAsync();
 
-                    // Retrieve the updated user record from the output parameter
-                    UserModel updatedUserData = null;
+                    // Check the value of pIsUpdated to determine if the update was successful
+                    isUpdated = Convert.ToInt32(pIsUpdated.Value.ToString());
 
-                    // Check if the output parameter contains data
-                    if (command.Parameters["p_updatedUser"].Value != DBNull.Value)
-                    {
-                        using (OracleDataReader reader = ((OracleRefCursor)command.Parameters["p_updatedUser"].Value).GetDataReader())
-                        {
-                            if (reader.Read())
-                            {
-                                updatedUserData = new UserModel
-                                {
-                                    UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
-                                    Username = reader.GetString(reader.GetOrdinal("Username")),
-                                    Password = reader.GetString(reader.GetOrdinal("Password")),
-                                    Email = reader.GetString(reader.GetOrdinal("Email")),
-                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                                    Address = reader.GetString(reader.GetOrdinal("Address")),
-                                    Phone = reader.GetString(reader.GetOrdinal("Phone"))
-                                };
-                            }
-                        }
-                    }
-
-                    return updatedUserData;
+                    // If pIsUpdated is 1, the update was successful, and you can return the updatedUser
+                    // Otherwise, return null or handle the failure as needed                    
                 }
             }
+            if (isUpdated == 1)
+            {
+                return updatedUser;
+            }
+            else
+            {
+                return null; // or handle the failure in your application
+            }
         }
+
 
     }
 }

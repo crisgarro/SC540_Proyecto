@@ -1,29 +1,36 @@
-create or replace PROCEDURE UpdateUser(
-    p_UserID IN NUMBER,
-    p_Username IN NVARCHAR2,
-    p_Password IN NVARCHAR2,
-    p_Email IN NVARCHAR2,
-    p_FirstName IN NVARCHAR2,
-    p_LastName IN NVARCHAR2,
-    p_Address IN NVARCHAR2,
-    p_Phone IN NVARCHAR2,
-    p_updatedUser OUT SYS_REFCURSOR
-) AS
+CREATE OR REPLACE PROCEDURE UpdateUser(
+    pUserID IN NUMBER,
+    pUsername IN NVARCHAR2,
+    pPassword IN NVARCHAR2,
+    pEmail IN NVARCHAR2,
+    pFirstName IN NVARCHAR2,
+    pLastName IN NVARCHAR2,
+    pAddress IN NVARCHAR2,
+    pPhone IN NVARCHAR2,
+    pIsUpdated OUT NUMBER
+)
+IS
 BEGIN
-    OPEN p_updatedUser FOR
-    SELECT * FROM Users
-    WHERE UserID = p_UserID;
+    pIsUpdated := 0; 
 
-    UPDATE Users
-    SET
-        Username = p_Username,
-        Password = p_Password,
-        Email = p_Email,
-        FirstName = p_FirstName,
-        LastName = p_LastName,
-        Address = p_Address,
-        Phone = p_Phone
-    WHERE UserID = p_UserID;
+    -- Verifica si el usuario existe 
+    SELECT COUNT(*)
+    INTO pIsUpdated
+    FROM Users
+    WHERE UserID = pUserID;
 
-    COMMIT;
+    IF pIsUpdated = 1 THEN
+        -- Update the user's information
+        UPDATE Users
+        SET
+            Username = pUsername,
+            Password = pPassword,
+            Email = pEmail,
+            FirstName = pFirstName,
+            LastName = pLastName,
+            Address = pAddress,
+            Phone = pPhone
+        WHERE UserID = pUserID;
+    END IF;
 END;
+/

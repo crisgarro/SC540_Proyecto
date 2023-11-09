@@ -8,6 +8,7 @@
     <DialogContent>
         <DialogTitle>@(EditMode ? "Editar Usuario" : "Crear Usuario")</DialogTitle>
         <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="userModel.UserID"/>
             <MudTextField Label="Nombre Usuario" @bind-Value="userModel.Username" HelperText="Max. 8 characters" RequiredError="Requerido!" Required="true"/>
             <MudTextField Label="Nombre" @bind-Value="userModel.FirstName" Required="true" RequiredError="Requerido!"/>
             <MudTextField Label="Apellido" @bind-Value="userModel.LastName" Required="true" RequiredError="Requerido!"/>
@@ -55,6 +56,7 @@
         {
             userModel = new UserModel
             {
+                UserID = ExistingUser.UserID,
                 Username = ExistingUser.Username,
                 FirstName = ExistingUser.FirstName,
                 LastName = ExistingUser.LastName,

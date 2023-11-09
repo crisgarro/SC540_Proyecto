@@ -8,14 +8,15 @@
     <MudText Class="mb-8">Aqui se desplegara una lista de los usuarios en el sistema</MudText>
     <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddUserDialog">Agregar Usuario</MudButton>
     <MudTable Items="_users" T="UserModel" Hover="true">
-        <HeaderContent>
+        <HeaderContent>                        
             <MudTh>Nombre Usuario</MudTh>
             <MudTh>Nombre</MudTh>
             <MudTh>Apellido</MudTh>
             <MudTh>Correo</MudTh>
             <MudTh></MudTh> <!-- Empty header cell for buttons -->
         </HeaderContent>
-        <RowTemplate>
+        <RowTemplate>            
+            <MudTd Style="display: none;">@context.UserID</MudTd>
             <MudTd>@context.Username</MudTd>
             <MudTd>@context.Email</MudTd>
             <MudTd>@context.FirstName</MudTd>
