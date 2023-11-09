@@ -80,21 +80,20 @@
             var result = await _service.CreateUser(userModel);
 
             //Verifica que la insercion sea correcta
-            if (result > 1)
+            if (result>=1)
             {
                 DialogIntance.Close(DialogResult.Ok(true));
             }
             else
             {
                 //Muestra un mensaje de error si el guardado fallo
-                await DialogService.ShowMessageBox("Error", "Se produjo un error al salvar el usuario", cancelText: "Ok");
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al salvar el usuario");
             }
         }
     }
 
     private async void UpdateUser()
-    {
-        // Implement update user logic for edit mode
+    {        
         // Realiza una validation del Form antes de enviar (valida los campos required)
         await form_reference.Validate();
 
