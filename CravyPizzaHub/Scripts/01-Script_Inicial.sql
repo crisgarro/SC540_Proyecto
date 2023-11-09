@@ -23,8 +23,8 @@ END;
 /
 
 -- Creacion de Tablespace CravyPizzaHub
-CREATE TABLESPACE CravyPizzaHub
-DATAFILE '/opt/oracle/oradata/ORCLCDB/CrazyPizzaHub.dbf' SIZE 50M
+CREATE TABLESPACE CravyPizzaHubG
+DATAFILE 'CravyPizzaHub.dbf' SIZE 50M
 AUTOEXTEND ON NEXT 1M MAXSIZE UNLIMITED
 DEFAULT STORAGE (INITIAL 1M NEXT 1M PCTINCREASE 0);
 
@@ -33,6 +33,6 @@ CREATE USER CravyDev IDENTIFIED BY abcd1234
 DEFAULT TABLESPACE CravyPizzaHub
 QUOTA UNLIMITED ON CravyPizzaHub;
 
--- Asignacion de Privilegios de Admin para CrazzyDev
+-- Asignacion de Privilegios de Admin para CravyDev
 GRANT DBA TO CravyDev;
 
