@@ -1,4 +1,4 @@
--- Drop tablespace if it exists
+-- Eliminar el Tablespace si existe
 BEGIN
   EXECUTE IMMEDIATE 'DROP TABLESPACE CravyPizzaHub INCLUDING CONTENTS AND DATAFILES';
 EXCEPTION
@@ -36,3 +36,12 @@ QUOTA UNLIMITED ON CravyPizzaHub;
 -- Asignacion de Privilegios de Admin para CravyDev
 GRANT DBA TO CravyDev;
 
+/*
+Correr esto para verificar el path de los tablespaces
+Si el archivo existe actualizar el "Eliminar el Tablespace si existe" 
+y agregar el nombre del tablesspace al delete, se ejecuta solo esa seccion
+una vez que se elimino el tablespace, entonces pueden correr todo el script
+
+SELECT file_name, tablespace_name
+FROM dba_data_files
+WHERE file_name = '/CravyPizzaHub.dbf';*/
