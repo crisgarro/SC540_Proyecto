@@ -44,7 +44,11 @@ CREATE TABLE Users (
   FirstName NVARCHAR2(50),
   LastName NVARCHAR2(50),
   Address NVARCHAR2(255),
-  Phone NVARCHAR2(15)
+  Phone NVARCHAR2(15),
+  Last_Login DATE,
+  Require_Change_Password BOOLEAN DEFAULT TRUE,
+  Enable BOOLEAN DEFAULT TRUE,
+  Disabled_Date DATE
 ) TABLESPACE CravyPizzaHuB;
 
 -- Create table Roles with an identity column
