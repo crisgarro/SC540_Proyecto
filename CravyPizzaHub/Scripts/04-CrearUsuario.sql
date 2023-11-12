@@ -11,7 +11,7 @@ CREATE OR REPLACE PROCEDURE InsertUser (
 IS
 BEGIN    
     INSERT INTO Users (
-        Username, Password, Email, FirstName, LastName, Address, Phone, Enable
+        Username, Password, Email, FirstName, LastName, Address, Phone, Enabled
     ) VALUES (
         p_username, p_password, p_email, p_firstName, p_lastName, p_address, p_phone, 1
     ) RETURNING UserID INTO p_userId;
