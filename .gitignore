@@ -399,4 +399,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Archivos Random
-CravyPizzaHub/.vs/CravyPizzaHub/*
+*/.vs/CravyPizzaHub/*
