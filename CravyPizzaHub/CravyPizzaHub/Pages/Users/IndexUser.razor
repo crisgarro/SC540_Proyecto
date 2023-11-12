@@ -23,7 +23,14 @@
             <MudTd>@context.LastName</MudTd>
             <MudTd>
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditUser(context)">Editar</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DeleteUser(context)">Deshabilitar</MudButton>
+                @if (context.Enable)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DisableUser(context, false)">Deshabilitar</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="() => DisableUser(context, true)">Habilitar</MudButton>
+                }
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -61,23 +68,18 @@
 
     }
 
-    private async void DeleteUser(UserModel user)
+    private async void DisableUser(UserModel user, bool state)
     {           
-        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", "Esta seguro que desea deshabilitar el usuario?", yesText: "Si", cancelText: "Cancelar");
+        var action = state ? "habilitado" : "deshabilitado";
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea establecer al usuario {user.Username} como {action}?", yesText: "Si", cancelText: "Cancelar");
         if (dialogResult is not null)
         {
             var dialogMessage = "";
-            var result = await _service.DisableUser(user);
-            if (result is not null)
-            {
-                dialogMessage = "El usuario se deshabilito con exito";
-            }
-            else
-            {
-                dialogMessage = "El usuario no se pudo deshabilitar";
-            }
+            var result = await _service.DisableUser(user, state);
+            dialogMessage = result is not null ? $"El usuario {user.Username} se ha {action} con exito" : $"El usuario {user.Username} no se ha {action}";
 
-            await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
+            var dialog2 = await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
+            LoadUsers();
         }
     }
 

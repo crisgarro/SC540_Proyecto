@@ -1,25 +1,23 @@
-CREATE OR REPLACE PROCEDURE DisableUser(
+CREATE OR REPLACE PROCEDURE "DISABLEUSER" (
     pUserID IN NUMBER,
-    pEnable IN NUMBER, 
+    pEnable IN NUMBER,
     pIsUpdated OUT NUMBER
 )
 IS
 BEGIN
     pIsUpdated := 0;
 
-    SELECT COUNT(*)
-    INTO pIsUpdated
-    FROM Users
+    UPDATE Users
+    SET Enable = pEnable,
+        Disabled_Date = CASE
+            WHEN pEnable = 0 THEN SYSDATE  
+            ELSE NULL 
+        END
     WHERE UserID = pUserID;
 
+    pIsUpdated := SQL%ROWCOUNT; -- Get the number of rows affected by the update
+
     IF pIsUpdated = 1 THEN
-        UPDATE Users
-        SET Enable = pEnable,
-            Disabled_Date = CASE
-                WHEN pEnable = 0 THEN SYSDATE  
-                ELSE NULL 
-            END
-        WHERE UserID = pUserID;
+        pIsUpdated := 1; -- Successfully updated
     END IF;
 END;
-/

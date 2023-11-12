@@ -30,7 +30,8 @@ namespace Backend.Services
                                 FirstName = reader["FirstName"].ToString(),
                                 LastName = reader["LastName"].ToString(),
                                 Address = reader["Address"].ToString(),
-                                Phone = reader["Phone"].ToString()
+                                Phone = reader["Phone"].ToString(),
+                                Enable= Convert.ToBoolean(Convert.ToInt32(reader["Enable"]))
                             };
 
                             users.Add(user);
@@ -94,44 +95,31 @@ namespace Backend.Services
                 }
             }
 
-            if (isUpdated == 1)
-            {
-                return updatedUser;
-            }
-            else
-            {
-                return null; // or handle the failure in your application
-            }
+            return isUpdated == 1 ? updatedUser : null;
         }
 
-        public async Task<UserModel> DisableUser(UserModel userToDisable)
+        public async Task<UserModel> DisableUser(UserModel userToDisable, bool state)
         {
-            int isDisabled = 0;
+            int isUpdated = 0;
             using (OracleConnectionManager manager = new())
             {
-                await using (OracleCommand command = new OracleCommand("UpdateUser", manager.GetConnection()))
+                await using (OracleCommand command = new OracleCommand("DisableUser", manager.GetConnection()))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add("pUserID", OracleDbType.Int32).Value = userToDisable.UserID;
+                    command.Parameters.Add("pEnable", OracleDbType.Int32).Value = state ? 1 : 0;
 
-                    OracleParameter pIsUpdated = new OracleParameter("pIsDisabled", OracleDbType.Int32);
+                    OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
                     pIsUpdated.Direction = ParameterDirection.Output;
                     command.Parameters.Add(pIsUpdated);
 
                     await command.ExecuteNonQueryAsync();
 
-                    isDisabled = Convert.ToInt32(pIsUpdated.Value.ToString());
+                    isUpdated = Convert.ToInt32(pIsUpdated.Value.ToString());
                 }
             }
 
-            if (isDisabled == 1)
-            {
-                return userToDisable;
-            }
-            else
-            {
-                return null;
-            }
+            return isUpdated == 1 ? userToDisable : null;
         }
     }
 }
