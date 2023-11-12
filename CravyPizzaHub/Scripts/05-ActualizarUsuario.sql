@@ -12,15 +12,13 @@ CREATE OR REPLACE PROCEDURE UpdateUser(
 IS
 BEGIN
     pIsUpdated := 0; 
-
-    -- Verifica si el usuario existe 
+    
     SELECT COUNT(*)
     INTO pIsUpdated
     FROM Users
     WHERE UserID = pUserID;
 
-    IF pIsUpdated = 1 THEN
-        -- Update the user's information
+    IF pIsUpdated = 1 THEN        
         UPDATE Users
         SET
             Username = pUsername,
