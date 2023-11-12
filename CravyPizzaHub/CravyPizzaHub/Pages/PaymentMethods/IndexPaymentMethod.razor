@@ -1,0 +1,107 @@
+﻿@page "/payment_methods"
+@using Backend.Models
+@using Backend.Services
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administracion de Metodos de Pago</MudText>
+    <MudText Class="mb-8">Metodos de Pago Soportados por el Sistema</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenDialogAddPaymentMethod">Agregar Metodo de Pago</MudButton>
+    <MudDataGrid T="PaymentMethodModel" Items="@_paymentMethods" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilter" Hideable="true" RowClick="@RowClicked" SelectedItemsChanged="@SelectedItemsChanged">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Metodos de Pago</MudText>
+            <MudSpacer/>
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+            </MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <SelectColumn T="PaymentMethodModel" />
+            <PropertyColumn Property="x => x.Number" Title="Nr" Sortable="false" Filterable="false"/>
+            <PropertyColumn Property="x => x.Sign"/>
+            <PropertyColumn Property="x => x.Name" SortBy="@SortBy"/>
+            <PropertyColumn Property="x => x.Position"/>
+            <PropertyColumn Property="x => x.Molar" Title="Molar mass"/>
+            <PropertyColumn Property="x => x.Group" Title="Category"/>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="PaymentMethodModel" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+<div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Checked="@_sortNameByLength" Color="Color.Primary">Sort Name Column By Length</MudSwitch>
+</div>
+
+<MudExpansionPanels Style="flex:1">
+    <MudExpansionPanel Text="Show Events">
+        @foreach (var message in _events)
+        {
+            <MudText Typo="@Typo.body2">@message</MudText>
+        }
+        @if (_events.Count > 0)
+        {
+            <div class="d-flex">
+                <MudSpacer/>
+                <MudButton Class="mt-3" ButtonType="ButtonType.Button" Variant="Variant.Filled" OnClick="@(() => _events.Clear())">Clear</MudButton>
+            </div>
+        }
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    private List<PaymentMethodModel> _paymentMethods;
+    private readonly PaymentMethodService _service = new();
+    private string _searchString;
+    private bool _sortNameByLength;
+    private List<string> _events = new();
+
+    private async void LoadPaymentMethods()
+    {
+        _paymentMethods = await _service.GetAllPaymentMethods();
+        if (_paymentMethods.Count > 0)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private Func<PaymentMethodModel, object> SortBy => x =>
+    {
+        if (_sortNameByLength)
+            return x.PaymentMethodName.Length;
+        return x.PaymentMethodName;
+    };
+
+    private Func<PaymentMethodModel, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.PaymentMethodName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadPaymentMethods();
+        await base.OnInitializedAsync();
+    }
+
+    // events
+    void RowClicked(DataGridRowClickEventArgs<PaymentMethodModel> args)
+    {
+        _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+    }
+
+    void SelectedItemsChanged(HashSet<PaymentMethodModel> items)
+    {
+        _events.Insert(0, $"Event = SelectedItemsChanged, Data = {System.Text.Json.JsonSerializer.Serialize(items)}");
+    }
+
+    private async Task OpenDialogAddPaymentMethod()
+    {
+
+    }
+
+}

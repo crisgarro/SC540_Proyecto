@@ -1,5 +1,6 @@
-CREATE OR REPLACE PROCEDURE DisablePaymentMethod (
+create or replace PROCEDURE DisablePaymentMethod (
     p_PaymentMethodID IN NUMBER,
+    p_Enabled IN NUMBER,
     p_WasChanged OUT NUMBER
 )
 IS
@@ -7,7 +8,7 @@ BEGIN
     p_WasChanged := 0;
 
     UPDATE Payment_Methods
-    SET Enabled = 0
+    SET Enabled = p_Enabled
     WHERE PaymentMethodID = p_PaymentMethodID;
 
     IF SQL%ROWCOUNT > 0 THEN

@@ -12,8 +12,4 @@ BEGIN
     ) RETURNING PaymentMethodID INTO p_PaymentMethodID;
 
     COMMIT;
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        RAISE;
 END InsertPaymentMethod;

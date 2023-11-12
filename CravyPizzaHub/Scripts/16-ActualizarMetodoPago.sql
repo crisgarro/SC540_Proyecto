@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UpdatePaymentMethodName (
+CREATE OR REPLACE PROCEDURE UpdatePaymentMethod(
     p_PaymentMethodID IN NUMBER,
     p_NewPaymentMethodName IN NVARCHAR2,
     p_WasUpdated OUT NUMBER
@@ -13,9 +13,7 @@ BEGIN
 
     IF SQL%ROWCOUNT > 0 THEN
         p_WasUpdated := 1; 
-    ELSE
-        p_WasUpdated := 0; 
     END IF;
 
     COMMIT;
-END UpdatePaymentMethodName;
+END UpdatePaymentMethod;
