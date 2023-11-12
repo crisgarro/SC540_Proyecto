@@ -61,10 +61,24 @@
 
     }
 
-    private async Task DeleteUser(UserModel user)
-    {
-        // Implement logic to delete the user
-        // You can confirm deletion and remove the user from the list
+    private async void DeleteUser(UserModel user)
+    {           
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", "Esta seguro que desea deshabilitar el usuario?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";
+            var result = await _service.DisableUser(user);
+            if (result is not null)
+            {
+                dialogMessage = "El usuario se deshabilito con exito";
+            }
+            else
+            {
+                dialogMessage = "El usuario no se pudo deshabilitar";
+            }
+
+            await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
+        }
     }
 
     private async Task OpenAddUserDialog()
