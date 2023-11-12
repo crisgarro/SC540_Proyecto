@@ -30,7 +30,8 @@ namespace Backend.Services
                                 FirstName = reader["FirstName"].ToString(),
                                 LastName = reader["LastName"].ToString(),
                                 Address = reader["Address"].ToString(),
-                                Phone = reader["Phone"].ToString()                                
+                                Phone = reader["Phone"].ToString(),
+                                Enable= Convert.ToBoolean(Convert.ToInt32(reader["Enable"]))
                             };
 
                             users.Add(user);
@@ -56,7 +57,7 @@ namespace Backend.Services
                     command.Parameters.Add("p_firstName", OracleDbType.Varchar2).Value = newUser.FirstName;
                     command.Parameters.Add("p_lastName", OracleDbType.Varchar2).Value = newUser.LastName;
                     command.Parameters.Add("p_address", OracleDbType.Varchar2).Value = newUser.Address;
-                    command.Parameters.Add("p_phone", OracleDbType.Varchar2).Value = newUser.Phone;                    
+                    command.Parameters.Add("p_phone", OracleDbType.Varchar2).Value = newUser.Phone;
 
                     command.Parameters.Add("p_userId", OracleDbType.Int32).Direction = ParameterDirection.Output;
 
@@ -83,7 +84,7 @@ namespace Backend.Services
                     command.Parameters.Add("pFirstName", OracleDbType.Varchar2).Value = updatedUser.FirstName;
                     command.Parameters.Add("pLastName", OracleDbType.Varchar2).Value = updatedUser.LastName;
                     command.Parameters.Add("pAddress", OracleDbType.Varchar2).Value = updatedUser.Address;
-                    command.Parameters.Add("pPhone", OracleDbType.Varchar2).Value = updatedUser.Phone;                                                                                                    
+                    command.Parameters.Add("pPhone", OracleDbType.Varchar2).Value = updatedUser.Phone;
 
                     OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
                     pIsUpdated.Direction = ParameterDirection.Output;
@@ -94,14 +95,31 @@ namespace Backend.Services
                 }
             }
 
-            if (isUpdated == 1)
+            return isUpdated == 1 ? updatedUser : null;
+        }
+
+        public async Task<UserModel> DisableUser(UserModel userToDisable, bool state)
+        {
+            int isUpdated = 0;
+            using (OracleConnectionManager manager = new())
             {
-                return updatedUser;
+                await using (OracleCommand command = new OracleCommand("DisableUser", manager.GetConnection()))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add("pUserID", OracleDbType.Int32).Value = userToDisable.UserID;
+                    command.Parameters.Add("pEnable", OracleDbType.Int32).Value = state ? 1 : 0;
+
+                    OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
+                    pIsUpdated.Direction = ParameterDirection.Output;
+                    command.Parameters.Add(pIsUpdated);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    isUpdated = Convert.ToInt32(pIsUpdated.Value.ToString());
+                }
             }
-            else
-            {
-                return null; // or handle the failure in your application
-            }
+
+            return isUpdated == 1 ? userToDisable : null;
         }
     }
 }

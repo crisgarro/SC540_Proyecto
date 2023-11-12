@@ -23,7 +23,14 @@
             <MudTd>@context.LastName</MudTd>
             <MudTd>
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditUser(context)">Editar</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DeleteUser(context)">Deshabilitar</MudButton>
+                @if (context.Enable)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DisableUser(context, false)">Deshabilitar</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="() => DisableUser(context, true)">Habilitar</MudButton>
+                }
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -61,10 +68,19 @@
 
     }
 
-    private async Task DeleteUser(UserModel user)
-    {
-        // Implement logic to delete the user
-        // You can confirm deletion and remove the user from the list
+    private async void DisableUser(UserModel user, bool state)
+    {           
+        var action = state ? "habilitado" : "deshabilitado";
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea establecer al usuario {user.Username} como {action}?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";
+            var result = await _service.DisableUser(user, state);
+            dialogMessage = result is not null ? $"El usuario {user.Username} se ha {action} con exito" : $"El usuario {user.Username} no se ha {action}";
+
+            var dialog2 = await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
+            LoadUsers();
+        }
     }
 
     private async Task OpenAddUserDialog()
