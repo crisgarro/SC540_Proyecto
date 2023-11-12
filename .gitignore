@@ -399,4 +399,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Archivos Random
-/.vs/CravyPizzaHub/DesignTimeBuild/.dtbcache.v2
+CravyPizzaHub/.vs/CravyPizzaHub/*
