@@ -13,7 +13,7 @@
             <MudTh>Nombre</MudTh>
             <MudTh>Apellido</MudTh>
             <MudTh>Correo</MudTh>
-            <MudTh></MudTh> <!-- Empty header cell for buttons -->
+            <MudTh></MudTh> 
         </HeaderContent>
         <RowTemplate>            
             <MudTd Style="display: none;">@context.UserID</MudTd>
@@ -34,13 +34,19 @@
     private List<UserModel> _users;
     private readonly UserService _service = new();
 
-    protected override async Task OnInitializedAsync()
+    private async void LoadUsers()
     {
         _users = await _service.GetAllUsers();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadUsers();
         await base.OnInitializedAsync();
     }
 
-    private void EditUser(UserModel user)
+    private async Task EditUser(UserModel user)
     {
         var parameters = new DialogParameters
         {
@@ -49,20 +55,26 @@
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        DialogService.Show<AddUser>("Dialog", parameters, options);
+        var dialog = DialogService.Show<AddUser>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        LoadUsers();
+
     }
 
-    private void DeleteUser(UserModel user)
+    private async Task DeleteUser(UserModel user)
     {
-    // Implement logic to delete the user
-    // You can confirm deletion and remove the user from the list
+        // Implement logic to delete the user
+        // You can confirm deletion and remove the user from the list
     }
 
-    private void OpenAddUserDialog()
+    private async Task OpenAddUserDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        DialogService.Show<AddUser>("Dialog", options);
+
+        var dialog = DialogService.Show<AddUser>("Dialog", options);
+        var result = await dialog.Result;
+        LoadUsers();
     }
 
 }

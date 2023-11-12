@@ -12,6 +12,8 @@
             <MudTextField Label="Nombre Usuario" @bind-Value="userModel.Username" HelperText="Max. 8 characters" RequiredError="Requerido!" Required="true"/>
             <MudTextField Label="Nombre" @bind-Value="userModel.FirstName" Required="true" RequiredError="Requerido!"/>
             <MudTextField Label="Apellido" @bind-Value="userModel.LastName" Required="true" RequiredError="Requerido!"/>
+            <MudTextField Label="Dirección" @bind-Value="userModel.Address" />
+            <MudTextField Label="Teléfono" @bind-Value="userModel.Phone" />
             <MudTextField Label="Correo" @bind-Value="userModel.Email" Required="true" RequiredError="Email is required"
                           Validation="@(new EmailAddressAttribute() { ErrorMessage = "La dirección de correo es inválida" })"/>
             <MudTextField Label="Contraseña" @bind-Value="userModel.Password" HelperText="Debe utilizar una contraseña segura" @ref="_passwordFieldValidation"
@@ -19,8 +21,9 @@
                           Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
                           RequiredError="Password is required!"/>
             <MudTextField T="string" Label="Password" HelperText="Repita la contraseña " InputType="InputType.Password"
-                          Validation="@(new Func<string, string>(PasswordMatch))"/>
+                          Validation="@(new Func<string, string>(PasswordMatch))"/>                        
         </MudForm>
+
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateUser : SaveUser)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
@@ -58,9 +61,12 @@
             {
                 UserID = ExistingUser.UserID,
                 Username = ExistingUser.Username,
+                Password = ExistingUser.Password,
+                Email = ExistingUser.Email,
                 FirstName = ExistingUser.FirstName,
                 LastName = ExistingUser.LastName,
-                Email = ExistingUser.Email,
+                Address = ExistingUser.Address,
+                Phone = ExistingUser.Phone                
             };
         }
         else
