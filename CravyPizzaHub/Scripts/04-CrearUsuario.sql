@@ -5,21 +5,15 @@ CREATE OR REPLACE PROCEDURE InsertUser (
     p_firstName IN NVARCHAR2,
     p_lastName IN NVARCHAR2,
     p_address IN NVARCHAR2,
-    p_phone IN NVARCHAR2,
-    p_lastLogin IN DATE, 
-    p_requireChangePassword IN NUMBER,
-    p_enable IN NUMBER, 
-    p_disabledDate IN DATE, 
+    p_phone IN NVARCHAR2,    
     p_userId OUT NUMBER
 )
 IS
-BEGIN
+BEGIN    
     INSERT INTO Users (
-        Username, Password, Email, FirstName, LastName, Address, Phone,
-        Last_Login, Require_Change_Password, Enable, Disabled_Date
+        Username, Password, Email, FirstName, LastName, Address, Phone, Enable
     ) VALUES (
-        p_username, p_password, p_email, p_firstName, p_lastName, p_address, p_phone,
-        p_lastLogin, p_requireChangePassword, p_enable, p_disabledDate
+        p_username, p_password, p_email, p_firstName, p_lastName, p_address, p_phone, 1
     ) RETURNING UserID INTO p_userId;
 
     COMMIT;
