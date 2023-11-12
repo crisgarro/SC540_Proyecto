@@ -23,7 +23,7 @@
             <MudTd>@context.LastName</MudTd>
             <MudTd>
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditUser(context)">Editar</MudButton>
-                @if (context.Enable)
+                @if (context.Enabled)
                 {
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DisableUser(context, false)">Deshabilitar</MudButton>
                 }

@@ -15,8 +15,7 @@ BEGIN
     SELECT UserID
     INTO vUserID
     FROM Users
-    WHERE Username = pUsername
-    AND Password = pPassword;
+    WHERE Username = pUsername AND Password = pPassword AND enabled = 1;
 
     IF vUserID IS NOT NULL THEN
         UPDATE Users

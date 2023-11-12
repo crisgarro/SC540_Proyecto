@@ -13,6 +13,6 @@ BEGIN
         USERS.LASTNAME,
         USERS.ADDRESS,
         USERS.PHONE,
-        USERS.Enable
+        USERS.Enabled
     FROM USERS;
 END;

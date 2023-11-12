@@ -31,7 +31,7 @@ namespace Backend.Services
                                 LastName = reader["LastName"].ToString(),
                                 Address = reader["Address"].ToString(),
                                 Phone = reader["Phone"].ToString(),
-                                Enable= Convert.ToBoolean(Convert.ToInt32(reader["Enable"]))
+                                Enabled= Convert.ToBoolean(Convert.ToInt32(reader["Enabled"]))
                             };
 
                             users.Add(user);
@@ -107,7 +107,7 @@ namespace Backend.Services
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add("pUserID", OracleDbType.Int32).Value = userToDisable.UserID;
-                    command.Parameters.Add("pEnable", OracleDbType.Int32).Value = state ? 1 : 0;
+                    command.Parameters.Add("pEnabled", OracleDbType.Int32).Value = state ? 1 : 0;
 
                     OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
                     pIsUpdated.Direction = ParameterDirection.Output;
