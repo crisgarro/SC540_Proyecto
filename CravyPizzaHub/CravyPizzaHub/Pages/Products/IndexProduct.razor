@@ -1,0 +1,75 @@
+﻿@page "/product_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administración de Productos</MudText>
+    <MudText Class="mb-8">Listado de Productos</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddProductDialog">Agregar Producto</MudButton>
+    <MudTable Items="_products" T="ProductModel" Hover="true">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Descripcion</MudTh>
+            <MudTh>Precio</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh>Categoria</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="display: none;">@context.ProductID</MudTd>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>@context.Price</MudTd>
+            <MudTd>@context.Stockquantity</MudTd>
+            <MudTd>@context.CategoryId</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditProduct(context)">Editar</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+
+    private List<ProductModel> _products;
+    private readonly ProductService _service = new();
+
+    private async void LoadProducts()
+    {
+        _products = await _service.GetAllProducts();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadProducts();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task EditProduct(ProductModel product)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingProduct", product }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddProduct>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        LoadProducts();
+
+    }
+
+    private async Task OpenAddProductDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+
+        var dialog = DialogService.Show<AddProduct>("Dialog", options);
+        var result = await dialog.Result;
+        LoadProducts();
+    }
+
+}
