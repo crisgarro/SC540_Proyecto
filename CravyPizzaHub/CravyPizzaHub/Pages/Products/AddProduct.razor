@@ -38,6 +38,9 @@
 
     private ProductModel productModel;
     private readonly ProductService _service = new();
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
 
     protected override async Task OnInitializedAsync()
     {
