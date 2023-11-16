@@ -1,0 +1,102 @@
+﻿@page "/review"
+@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Reseña" : "Crear Reseña")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="reviewModel.ReviewID" />
+            <MudTextField Label="Id del usuario" @bind-Value="reviewModel.UserID" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Id del producto" @bind-Value="reviewModel.ProductID" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Puntuación" @bind-Value="reviewModel.Rating" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Comentarios" @bind-Value="reviewModel.Comments" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Fecha de reseña" @bind-Value="reviewModel.Timestamp" Required="true" RequiredError="Requerido!" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateReview : SaveReview)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseReviewDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogInstance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; }
+
+    [Parameter]
+    public ReviewModel ExistingReview { get; set; }
+
+    private ReviewModel reviewModel;
+    private readonly ReviewService _service = new();
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            reviewModel = new ReviewModel
+            {
+                ReviewID = ExistingReview.ReviewID,
+                UserID = ExistingReview.UserID,
+                ProductID = ExistingReview.ProductID,
+                Rating = ExistingReview.Rating,
+                Comments = ExistingReview.Comments,
+                Timestamp = ExistingReview.Timestamp
+            };
+        }
+        else
+        {
+            reviewModel = new ReviewModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveReview()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.CreateReview(reviewModel);
+
+            if (result >= 1)
+            {
+                DialogInstance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al ingresar la reseña");
+            }
+        }
+    }
+
+    private async void UpdateReview()
+    {        
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.UpdateReview(reviewModel);
+
+            DialogInstance.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void CloseReviewDialog()
+    {
+        DialogInstance.Cancel();
+    }
+}

@@ -1,0 +1,73 @@
+﻿@page "/review_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administración de Reviews</MudText>
+    <MudText Class="mb-8">Listado de Reviews</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddReviewDialog">Agregar Review</MudButton>
+    <MudTable Items="_reviews" T="ReviewModel" Hover="true">
+        <HeaderContent>
+            <MudTh>Id del usuario</MudTh>
+            <MudTh>Id del producto</MudTh>
+            <MudTh>Puntuación</MudTh>
+            <MudTh>Comentarios</MudTh>
+            <MudTh>Fecha de reseña</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="display: none;">@context.ReviewID</MudTd>
+            <MudTd>@context.UserID</MudTd>
+            <MudTd>@context.ProductID</MudTd>
+            <MudTd>@context.Rating</MudTd>
+            <MudTd>@context.Comments</MudTd>
+            <MudTd>@context.Timestamp</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditReview(context)">Editar</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+
+    private List<ReviewModel> _reviews;
+    private readonly ReviewService _service = new();
+
+    private async void LoadReviews()
+    {
+        _reviews = await _service.GetAllReviews();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadReviews();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task EditReview(ReviewModel review)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingReview", review }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddReview>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        LoadReviews();
+    }
+
+    private async Task OpenAddReviewDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddReview>("Dialog", options);
+        var result = await dialog.Result;
+        LoadReviews();
+    }
+
+}
