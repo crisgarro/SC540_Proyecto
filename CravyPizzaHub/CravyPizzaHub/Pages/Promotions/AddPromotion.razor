@@ -1,0 +1,110 @@
+﻿@page "/promotions"
+@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Promoción" : "Crear Promoción")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="promotionModel.PromotionID" />
+            <MudTextField Label="Nombre" @bind-Value="promotionModel.PromotionName" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Cantidad del descuento" @bind-Value="promotionModel.DiscountAmount" Required="true" RequiredError="Requerido!" />
+            <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Fecha de inicio" @bind-Date="promotionModel.StartDate" Color="Color.Success"  Required="true" RequiredError="Requerido!" DateFormat="dd/MM/yyyy" />
+            <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Fecha final" @bind-Date="promotionModel.EndDate" Color="Color.Secondary" Required="true" RequiredError="Requerido!" DateFormat="dd/MM/yyyy" />
+
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdatePromotion : SavePromotion)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ClosePromotionDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } //Indica si esta en modo edicion
+
+    [Parameter]
+    public PromotionModel ExistingPromotion { get; set; } // Promocion existente para Editar
+
+    private PromotionModel promotionModel;
+    private readonly PromotionService _service = new();
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            promotionModel = new PromotionModel
+            {
+                    PromotionID = ExistingPromotion.PromotionID,
+                    PromotionName = ExistingPromotion.PromotionName,
+                    DiscountAmount = ExistingPromotion.DiscountAmount,
+                    StartDate = ExistingPromotion.StartDate,
+                    EndDate = ExistingPromotion.EndDate,
+            };
+        }
+        else
+        {
+            promotionModel = new PromotionModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SavePromotion()
+    {
+        //Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta la promoción
+            var result = await _service.CreatePromotion(promotionModel);
+
+            //Verifica que la insercion sea correcta
+            if (result>=1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                //Muestra un mensaje de error si el guardado tiene algún fallo
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al ingresar la promocion");
+            }
+        }
+    }
+
+    private async void UpdatePromotion()
+    {        
+        // Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta la promoción
+            var result = await _service.UpdatePromotion(promotionModel);
+
+            //Verifica que la insercion sea correcta
+            DialogIntance.Close(DialogResult.Ok(true));
+            
+        }
+    }
+
+    private void ClosePromotionDialog()
+    {
+        DialogIntance.Cancel();
+    }
+
+}

@@ -1,0 +1,74 @@
+﻿@page "/promotions_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administración de Promociones</MudText>
+    <MudText Class="mb-8">Listado de Promociones</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddPromotionDialog">Agregar Promocion</MudButton>
+    <MudTable Items="_promotions" T="PromotionModel" Hover="true">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Porcentaje del descuento</MudTh>
+            <MudTh>Fecha de inicio"</MudTh>
+            <MudTh>Fecha final</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="display: none;">@context.PromotionID</MudTd>
+            <MudTd>@context.PromotionName</MudTd>
+            <MudTd>@context.DiscountAmount</MudTd>
+            <MudTd>@context.StartDate</MudTd>
+            <MudTd>@context.EndDate</MudTd>
+
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditPromotion(context)">Editar</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+
+    private List<PromotionModel> _promotions;
+    private readonly PromotionService _service = new();
+
+    private async void LoadPromotions()
+    {
+        _promotions = await _service.GetAllPromotions();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadPromotions();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task EditPromotion(PromotionModel promotion)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingPromotion", promotion }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddPromotion>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        LoadPromotions();
+
+    }
+
+    private async Task OpenAddPromotionDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+
+        var dialog = DialogService.Show<AddPromotion>("Dialog", options);
+        var result = await dialog.Result;
+        LoadPromotions();
+    }
+
+}
