@@ -44,7 +44,10 @@
     private async void LoadUsers()
     {
         _users = await _service.GetAllUsers();
-        StateHasChanged();
+        if (_users.Count > 0)
+        {
+            StateHasChanged();
+        }
     }
 
     protected override async Task OnInitializedAsync()

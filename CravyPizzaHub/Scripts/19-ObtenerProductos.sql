@@ -1,4 +1,4 @@
-create or replace NONEDITIONABLE PROCEDURE GetAllProducts (
+create or replace PROCEDURE GetAllProducts (
     p_products OUT SYS_REFCURSOR
 )
 AS

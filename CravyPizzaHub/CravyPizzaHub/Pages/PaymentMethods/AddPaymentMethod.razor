@@ -1,0 +1,101 @@
+﻿@page "/add_payment_method"
+@using Backend.Models
+@using Backend.Services
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Metodo de Pago" : "Crear Metodo de Pago")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="model.PaymentMethodID" />
+            <MudTextField Label="Nombre Metodo de Pago" @bind-Value="model.PaymentMethodName" RequiredError="Requerido!" Required="true"/>
+            <MudSelect Label="Habilitado" @bind-Value="model.Enabled">
+                <MudSelectItem Value="1">Habilitado</MudSelectItem>
+                <MudSelectItem Value="0">Deshabilitado</MudSelectItem>
+            </MudSelect>
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdatePaymentMethod : SavePaymentMethod)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseUserDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } 
+
+    [Parameter]
+    public PaymentMethodModel ExistingRecord { get; set; } 
+
+    private PaymentMethodModel model;
+    private readonly PaymentMethodService _service = new();
+
+    MudTextField<string> _passwordFieldValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            model = new PaymentMethodModel
+            {
+                PaymentMethodID = ExistingRecord.PaymentMethodID,
+                PaymentMethodName = ExistingRecord.PaymentMethodName,
+                Enabled= ExistingRecord.Enabled,
+            };
+        }
+        else
+        {
+            model = new PaymentMethodModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SavePaymentMethod()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.CreatePaymentMethod(model);
+
+            if (result>=1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar el metodo de pago");
+            }
+        }
+    }
+
+    private async void UpdatePaymentMethod()
+    {        
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.UpdatePaymentMethod(model);
+
+            DialogIntance.Close(DialogResult.Ok(true));
+            
+        }
+    }
+
+    private void CloseUserDialog()
+    {
+        DialogIntance.Cancel();
+    }
+}
