@@ -6,7 +6,7 @@ namespace Backend.Services
 {
     public class PaymentMethodService
     {
-        public async Task<List<PaymentMethodModel>> GetAllPaymentMethods()
+        public async Task<IEnumerable<PaymentMethodModel>> GetAllPaymentMethods()
         {
             List<PaymentMethodModel> paymentMethods = new List<PaymentMethodModel>();
 
@@ -72,10 +72,9 @@ namespace Backend.Services
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add("p_PaymentMethodID", OracleDbType.Int32).Value =
-                        updatedPaymentMethod.PaymentMethodID;
-                    command.Parameters.Add("p_NewPaymentMethodName", OracleDbType.NVarchar2).Value =
-                        updatedPaymentMethod.PaymentMethodName;
+                    command.Parameters.Add("p_PaymentMethodID", OracleDbType.Int32).Value = updatedPaymentMethod.PaymentMethodID;
+                    command.Parameters.Add("p_PaymentMethodName", OracleDbType.NVarchar2).Value = updatedPaymentMethod.PaymentMethodName;
+                    command.Parameters.Add("p_Enabled", OracleDbType.Int32).Value = updatedPaymentMethod.Enabled;
 
                     OracleParameter wasUpdated = new OracleParameter("p_WasUpdated", OracleDbType.Int32);
                     wasUpdated.Direction = ParameterDirection.Output;

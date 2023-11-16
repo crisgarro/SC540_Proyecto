@@ -1,12 +1,13 @@
 ﻿@page "/payment_methods"
 @using Backend.Models
 @using Backend.Services
+@inject IDialogService DialogService
 
 <MudContainer>
     <MudText Typo="Typo.h3" GutterBottom="true">Metodos de Pago</MudText>
     <MudText Class="mb-8">Metodos de Pago Soportados por el Sistema</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenDialogAddPaymentMethod">Nuevo Metodo de Pago</MudButton>
-    <MudDataGrid T="PaymentMethodModel" Items="@_paymentMethods" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilter" Hideable="true">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AddItem">Nuevo Metodo de Pago</MudButton>
+    <MudDataGrid T="PaymentMethodModel" Items="@_paymentMethods" QuickFilter="@QuickFilter" Hideable="true">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Metodos de Pago</MudText>
             <MudSpacer/>
@@ -14,31 +15,41 @@
             </MudTextField>
         </ToolBarContent>
         <Columns>
-            <PropertyColumn Property="x => x.Id" Title="Nr" Sortable="false" Filterable="false"/>
-            <PropertyColumn Property="x => x.PaymentMethodID"/>
-            <PropertyColumn Property="x => x.PaymentMethodName"/>
-            <PropertyColumn Property="x => x.Enabled"/>
+            <PropertyColumn Hidden="true" Property="x => x.PaymentMethodID"/>
+            <PropertyColumn Title="Metodo de Pago" Property="x => x.PaymentMethodName"/>
+            <PropertyColumn Title="Habilitado" Property="x => x.Enabled">
+                <CellTemplate>
+                    @if (@context.Item.Enabled == 1)
+                    {
+                        <span>Si</span>
+                    }
+                    else
+                    {
+                        <span>No</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Title="Accion" Property="x => x.Enabled">
+                <CellTemplate>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditItem(@context.Item))">Editar</MudButton>
+                </CellTemplate>
+            </PropertyColumn>
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="PaymentMethodModel" PageSizeOptions="new int[] { 20, 50}" RowsPerPageString="Registros Por Pagina" />
+            <MudDataGridPager T="PaymentMethodModel" PageSizeOptions="new int[] { 20, 50 }" RowsPerPageString="Registros Por Pagina"/>
         </PagerContent>
     </MudDataGrid>
 </MudContainer>
 
 @code {
-    private List<PaymentMethodModel> _paymentMethods;
+    private IEnumerable<PaymentMethodModel> _paymentMethods;
     private readonly PaymentMethodService _service = new();
     private string _searchString;
 
-    private async void LoadPaymentMethods()
+    private async Task LoadPaymentMethods()
     {
         _paymentMethods = await _service.GetAllPaymentMethods();
-        if (_paymentMethods.Count > 0)
-        {
-            StateHasChanged();
-        }
     }
-    
 
     private Func<PaymentMethodModel, bool> QuickFilter => x =>
     {
@@ -53,14 +64,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        LoadPaymentMethods();
-        await base.OnInitializedAsync();
+        await LoadPaymentMethods();
     }
-    
 
-    private async Task OpenDialogAddPaymentMethod()
+
+    private async Task AddItem()
     {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
+        var dialog = DialogService.Show<AddPaymentMethod>("Dialog", options);
+        var result = await dialog.Result;
+        await LoadPaymentMethods();
     }
+
+
+    private async Task EditItem(PaymentMethodModel model)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingRecord", model }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddPaymentMethod>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        await LoadPaymentMethods();
+    }
+
+
 
 }
