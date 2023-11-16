@@ -10,7 +10,7 @@
         <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
             <input type="hidden" @bind="promotionModel.PromotionID" />
             <MudTextField Label="Nombre" @bind-Value="promotionModel.PromotionName" Required="true" RequiredError="Requerido!" />
-            <MudTextField Label="Cantidad del descuento" @bind-Value="promotionModel.DiscountAmount" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Porcentaje del descuento" @bind-Value="promotionModel.DiscountAmount" Required="true" RequiredError="Requerido!" />
             <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Fecha de inicio" @bind-Date="promotionModel.StartDate" Color="Color.Success"  Required="true" RequiredError="Requerido!" DateFormat="dd/MM/yyyy" />
             <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Fecha final" @bind-Date="promotionModel.EndDate" Color="Color.Secondary" Required="true" RequiredError="Requerido!" DateFormat="dd/MM/yyyy" />
 

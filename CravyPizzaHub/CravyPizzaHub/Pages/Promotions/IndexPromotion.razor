@@ -18,12 +18,13 @@
         <RowTemplate>
             <MudTd Style="display: none;">@context.PromotionID</MudTd>
             <MudTd>@context.PromotionName</MudTd>
-            <MudTd>@context.DiscountAmount</MudTd>
+            <MudTd>@context.DiscountAmount%</MudTd>
             <MudTd>@context.StartDate</MudTd>
             <MudTd>@context.EndDate</MudTd>
 
             <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditPromotion(context)">Editar</MudButton>
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditPromotion(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Medium" OnClick="() => DeletePromotion(context)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -59,6 +60,21 @@
         var result = await dialog.Result;
         LoadPromotions();
 
+    }
+
+    private async Task DeletePromotion(PromotionModel Promotion)
+    {
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que deseas eliminar esta promoción?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";
+            var result = await _service.DeletePromotion(Promotion);
+
+            dialogMessage = result ? $"La promoción {Promotion.PromotionName} se ha eliminado con éxito" : $"La promoción {Promotion.PromotionName} no se ha eliminado";
+
+            var dialog2 = await DialogService.ShowMessageBox("Eliminar reseña", dialogMessage, yesText: "Ok");
+            LoadPromotions();
+        }
     }
 
     private async Task OpenAddPromotionDialog()

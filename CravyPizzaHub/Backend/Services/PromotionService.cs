@@ -1,8 +1,6 @@
 ﻿using Backend.Models;
 using Oracle.ManagedDataAccess.Client;
-using Oracle.ManagedDataAccess.Types;
 using System.Data;
-using System.Globalization;
 
 namespace Backend.Services
 {
@@ -28,8 +26,8 @@ namespace Backend.Services
                                 PromotionID = Convert.ToInt32(reader["PromotionID"]),
                                 PromotionName = reader["PromotionName"].ToString(),
                                 DiscountAmount = Convert.ToInt32(reader["DiscountAmount"]),
-                                StartDate = DateTime.ParseExact(reader["StartDate"].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture),
-                                EndDate = DateTime.ParseExact(reader["EndDate"].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture),
+                                StartDate = Convert.ToDateTime(reader["StartDate"]),
+                                EndDate = Convert.ToDateTime(reader["EndDate"])
                             };
 
                             promotions.Add(promotion);
@@ -52,9 +50,9 @@ namespace Backend.Services
                     command.CommandType = CommandType.StoredProcedure;
 
                     command.Parameters.Add("p_PromotionName", OracleDbType.Varchar2).Value = newPromotion.PromotionName;
-                    command.Parameters.Add("p_DiscountAmount", OracleDbType.Decimal).Value = new OracleDecimal(newPromotion.DiscountAmount);
-                    command.Parameters.Add("p_StartDate", OracleDbType.Varchar2).Value = newPromotion.StartDate;
-                    command.Parameters.Add("p_EndDate", OracleDbType.Varchar2).Value = newPromotion.EndDate;
+                    command.Parameters.Add("p_DiscountAmount", OracleDbType.Decimal).Value = newPromotion.DiscountAmount;
+                    command.Parameters.Add("p_StartDate", OracleDbType.Date).Value = newPromotion.StartDate;
+                    command.Parameters.Add("p_EndDate", OracleDbType.Date).Value = newPromotion.EndDate;
 
                     command.Parameters.Add("p_PromotionId", OracleDbType.Int32).Direction = ParameterDirection.Output;
 
@@ -68,29 +66,37 @@ namespace Backend.Services
 
         public async Task<PromotionModel> UpdatePromotion(PromotionModel updatedPromotion)
         {
-            int isUpdated = 0;
             using (OracleConnectionManager manager = new())
             {
-                await using (OracleCommand command = new OracleCommand("updatedPromotion", manager.GetConnection()))
+                await using (OracleCommand command = new OracleCommand("UpdatePromotion", manager.GetConnection()))
                 {
                     command.CommandType = CommandType.StoredProcedure;
+
                     command.Parameters.Add("p_PromotionID", OracleDbType.Int32).Value = updatedPromotion.PromotionID;
                     command.Parameters.Add("p_PromotionName", OracleDbType.Varchar2).Value = updatedPromotion.PromotionName;
-                    command.Parameters.Add("p_DiscountAmount", OracleDbType.Decimal).Value = new OracleDecimal(updatedPromotion.DiscountAmount);
-                    command.Parameters.Add("p_StartDate", OracleDbType.Varchar2).Value = updatedPromotion.StartDate;
-                    command.Parameters.Add("p_EndDate", OracleDbType.Varchar2).Value = updatedPromotion.EndDate;
-
-                    OracleParameter pIsUpdated = new OracleParameter("pIsUpdated", OracleDbType.Int32);
-                    pIsUpdated.Direction = ParameterDirection.Output;
-                    command.Parameters.Add(pIsUpdated);
+                    command.Parameters.Add("p_DiscountAmount", OracleDbType.Decimal).Value = updatedPromotion.DiscountAmount;
+                    command.Parameters.Add("p_StartDate", OracleDbType.Date).Value = updatedPromotion.StartDate;
+                    command.Parameters.Add("p_EndDate", OracleDbType.Date).Value = updatedPromotion.EndDate;
 
                     await command.ExecuteNonQueryAsync();
-                    isUpdated = Convert.ToInt32(pIsUpdated.Value.ToString());
                 }
             }
 
-            return isUpdated == 1 ? updatedPromotion : null;
+            return updatedPromotion;
         }
+        public async Task<bool> DeletePromotion(PromotionModel deletedPromotion)
+        {
+            using (OracleConnectionManager manager = new())
+            {
+                await using (OracleCommand command = new OracleCommand("DeletePromotion", manager.GetConnection()))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add("p_promotionID", OracleDbType.Int32).Value = deletedPromotion.PromotionID;
 
+                    await command.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
     }
 }
