@@ -1,0 +1,111 @@
+﻿@page "/product"
+@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Producto" : "Crear Producto")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="productModel.ProductID" />
+            <MudTextField Label="Nombre" @bind-Value="productModel.Name" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Descripcion" @bind-Value="productModel.Description" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Precio" @bind-Value="productModel.Price" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Stock" @bind-Value="productModel.Stockquantity" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Categoria" @bind-Value="productModel.CategoryId" Required="true" RequiredError="Requerido!" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateProduct : SaveProduct)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseProductDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } //Indica si esta en modo edicion
+
+    [Parameter]
+    public ProductModel ExistingProduct { get; set; } // Producto existente para Editar
+
+    private ProductModel productModel;
+    private readonly ProductService _service = new();
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            productModel = new ProductModel
+            {
+                ProductID = ExistingProduct.ProductID,
+                Name = ExistingProduct.Name,
+                Description = ExistingProduct.Description,
+                Price = ExistingProduct.Price,
+                Stockquantity = ExistingProduct.Stockquantity,
+                CategoryId = ExistingProduct.CategoryId
+            };
+        }
+        else
+        {
+            productModel = new ProductModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveProduct()
+    {
+        //Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta el producto
+            var result = await _service.CreateProduct(productModel);
+
+            //Verifica que la insercion sea correcta
+            if (result>=1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                //Muestra un mensaje de error si el guardado tiene algún fallo
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al ingresar el producto");
+            }
+        }
+    }
+
+    private async void UpdateProduct()
+    {        
+        // Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta el producto
+            var result = await _service.UpdateProduct(productModel);
+
+            //Verifica que la insercion sea correcta
+            DialogIntance.Close(DialogResult.Ok(true));
+            
+        }
+    }
+
+    private void CloseProductDialog()
+    {
+        DialogIntance.Cancel();
+    }
+
+}
