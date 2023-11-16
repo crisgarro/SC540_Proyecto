@@ -1,9 +1,8 @@
-CREATE OR REPLACE PROCEDURE GetAllReviews(
+create or replace PROCEDURE GetAllReviews(
     p_Review OUT SYS_REFCURSOR
 )
 IS
 BEGIN
-    OPEN p_Result FOR
+    OPEN p_Review FOR
     SELECT * FROM Product_Reviews;
 END GetAllReviews;
-/
