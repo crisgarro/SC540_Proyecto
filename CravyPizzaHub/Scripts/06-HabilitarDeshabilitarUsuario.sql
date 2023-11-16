@@ -1,6 +1,6 @@
-create or replace PROCEDURE "DISABLEUSER" (
+create or replace PROCEDURE            "DISABLEUSER" (
     pUserID IN NUMBER,
-    pEnable IN NUMBER, 
+    pEnabled IN NUMBER, -- Updating the parameter to match the field type in the table
     pIsUpdated OUT NUMBER
 )
 IS
@@ -14,9 +14,9 @@ BEGIN
 
     IF pIsUpdated = 1 THEN
         UPDATE Users
-        SET Enabled = pEnable,
+        SET Enabled = pEnabled,
             Disabled_Date = CASE
-                WHEN pEnable = 0 THEN SYSDATE  
+                WHEN pEnabled = 0 THEN SYSDATE  
                 ELSE NULL 
             END
         WHERE UserID = pUserID;
