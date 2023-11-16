@@ -76,6 +76,21 @@ namespace Backend.Services
 
             return updatedReward;
         }
+        public async Task<bool> DeleteReward(RewardModel deletedReward)
+        {
+            using (OracleConnectionManager manager = new())
+            {
+                await using (OracleCommand command = new OracleCommand("DeleteReward", manager.GetConnection()))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add("p_RewardID", OracleDbType.Int32).Value = deletedReward.RewardID;
+
+                    await command.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
+
 
 
     }

@@ -18,7 +18,8 @@
             <MudTd>@context.UserID</MudTd>
             <MudTd>@context.Points</MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditReward(context)">Editar</MudButton>
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditReward(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Medium" OnClick="() => DeleteReward(context)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -53,6 +54,21 @@
         var dialog = DialogService.Show<AddReward>("Dialog", parameters, options);
         var result = await dialog.Result;
         LoadRewards();
+    }
+
+    private async Task DeleteReward(RewardModel reward)
+    {
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea eliminar esta recompensa?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";
+            var result = await _service.DeleteReward(reward);
+
+            dialogMessage = result ? $"La recompensa {reward.RewardID} se ha eliminado con éxito" : $"La recompensa {reward.RewardID} no se ha eliminado";
+
+            var dialog2 = await DialogService.ShowMessageBox("Eliminar recompensa", dialogMessage, yesText: "Ok");
+            LoadRewards();
+        }
     }
 
     private async Task OpenAddRewardDialog()
