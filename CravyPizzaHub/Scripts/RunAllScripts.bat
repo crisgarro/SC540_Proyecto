@@ -5,7 +5,9 @@ set USERNAME=CravyDev
 set PASSWORD=abcd1234
 set SID=ORCLCDB
 set SQLPLUS_PATH=C:\git\Oracle\sqldeveloper-23.1.0.097.1607-x64\sqldeveloper\sqldeveloper\bin\sql.exe
-set EXCLUDED_SCRIPT=01-Script_Inicial.sql 02-Script_Creacion_DB.sql
+set EXCLUDED_SCRIPT=01-Script_Inicial.sql
+REM Para no correr los script sin recrear las tablas
+REM EXCLUDED_SCRIPT=01-Script_Inicial.sql 02-Script_Creacion_DB.sql
 
 REM Ensure previous ScriptOutput.txt is deleted
 del ScriptOutput.txt > nul 2>&1

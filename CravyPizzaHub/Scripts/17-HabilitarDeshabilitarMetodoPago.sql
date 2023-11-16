@@ -8,7 +8,7 @@ BEGIN
     p_WasChanged := 0;
 
     UPDATE Payment_Methods
-    SET Enabled = p_Enabled
+    SET enabled = p_Enabled
     WHERE PaymentMethodID = p_PaymentMethodID;
 
     IF SQL%ROWCOUNT > 0 THEN
