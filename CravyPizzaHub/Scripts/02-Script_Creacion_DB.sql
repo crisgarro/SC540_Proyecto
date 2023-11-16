@@ -71,7 +71,7 @@ CREATE TABLE Products (
   Description NVARCHAR2(255),
   Price NUMBER(10, 2) NOT NULL,
   StockQuantity NUMBER NOT NULL,
-  CategoryID NUMBER
+  CategoryID NUMBER NOT NULL
 ) TABLESPACE CravyPizzaHuB;
 
 -- Crear tabla Categories con una columna de identidad
