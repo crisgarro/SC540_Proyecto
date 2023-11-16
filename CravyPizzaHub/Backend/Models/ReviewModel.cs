@@ -7,6 +7,6 @@
         public int ProductID { get; set; }
         public int Rating { get; set; }
         public string Comments { get; set; }
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
     }
 }

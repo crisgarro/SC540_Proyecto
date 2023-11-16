@@ -24,7 +24,8 @@
             <MudTd>@context.Comments</MudTd>
             <MudTd>@context.Timestamp</MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditReview(context)">Editar</MudButton>
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditReview(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Medium" OnClick="() => DeleteReview(context)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -59,6 +60,21 @@
         var dialog = DialogService.Show<AddReview>("Dialog", parameters, options);
         var result = await dialog.Result;
         LoadReviews();
+    }
+
+    private async Task DeleteReview(ReviewModel Review)
+    {
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que deseas eliminar esta reseña?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";
+            var result = await _service.DeleteReview(Review);
+
+            dialogMessage = result ? $"La reseña {Review.ReviewID} se ha eliminado con éxito" : $"La reseña {Review.ReviewID} no se ha eliminado";
+
+            var dialog2 = await DialogService.ShowMessageBox("Eliminar reseña", dialogMessage, yesText: "Ok");
+            LoadReviews();
+        }
     }
 
     private async Task OpenAddReviewDialog()

@@ -13,7 +13,8 @@
             <MudTextField Label="Id del producto" @bind-Value="reviewModel.ProductID" Required="true" RequiredError="Requerido!" />
             <MudTextField Label="Puntuación" @bind-Value="reviewModel.Rating" Required="true" RequiredError="Requerido!" />
             <MudTextField Label="Comentarios" @bind-Value="reviewModel.Comments" Required="true" RequiredError="Requerido!" />
-            <MudTextField Label="Fecha de reseña" @bind-Value="reviewModel.Timestamp" Required="true" RequiredError="Requerido!" />
+            <MudDatePicker Label="Fecha de reseña" @bind-Date="reviewModel.Timestamp" Required="true" RequiredError="Requerido!" />
+
         </MudForm>
     </DialogContent>
     <DialogActions>

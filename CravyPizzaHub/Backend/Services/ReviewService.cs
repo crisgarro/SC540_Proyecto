@@ -82,5 +82,20 @@ namespace Backend.Services
             return updatedReview;
         }
 
+        public async Task<bool> DeleteReview(ReviewModel deletedReview)
+        {
+            using (OracleConnectionManager manager = new())
+            {
+                await using (OracleCommand command = new OracleCommand("DeleteReview", manager.GetConnection()))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add("p_ReviewID", OracleDbType.Int32).Value = deletedReview.ReviewID;
+
+                    await command.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
+
     }
 }
