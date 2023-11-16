@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE InsertUser (
+create or replace PROCEDURE "INSERTUSER" (
     p_username IN NVARCHAR2,
     p_password IN NVARCHAR2,
     p_email IN NVARCHAR2,
@@ -22,4 +22,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END InsertUser;
-/
+
