@@ -1,0 +1,102 @@
+﻿@page "/reward"
+@using Backend.Models
+@using Backend.Services
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Recompensa" : "Crear Recompensa")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="rewardModel.RewardID" />
+            <MudTextField Label="Usuario ID" @bind-Value="rewardModel.UserID" Required="true" RequiredError="Requerido!" />
+            <MudTextField Label="Puntos" @bind-Value="rewardModel.Points" Required="true" RequiredError="Requerido!" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateReward : SaveReward)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseRewardDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } //Indica si esta en modo edicion
+
+    [Parameter]
+    public RewardModel ExistingReward { get; set; } // Recompensa existente para Editar
+
+    private RewardModel rewardModel;
+    private readonly RewardService _service = new();
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            rewardModel = new RewardModel
+            {
+                RewardID = ExistingReward.RewardID,
+                UserID = ExistingReward.UserID,
+                Points = ExistingReward.Points
+            };
+        }
+        else
+        {
+            rewardModel = new RewardModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveReward()
+    {
+        //Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Inserta la recompensa
+            var result = await _service.CreateReward(rewardModel);
+
+            //Verifica que la insercion sea correcta
+            if (result >= 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                //Muestra un mensaje de error si el guardado tiene algún fallo
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al ingresar la recompensa");
+            }
+        }
+    }
+
+    private async void UpdateReward()
+    {
+        // Realiza una validation del Form antes de enviar (valida los campos required)
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            // Actualiza la recompensa
+            var result = await _service.UpdateReward(rewardModel);
+
+            //Verifica que la actualización sea correcta
+            DialogIntance.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void CloseRewardDialog()
+    {
+        DialogIntance.Cancel();
+    }
+}
