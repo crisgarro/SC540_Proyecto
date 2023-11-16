@@ -1,0 +1,66 @@
+﻿@page "/reward_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Administración de Recompensas</MudText>
+    <MudText Class="mb-8">Listado de Recompensas</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddRewardDialog">Agregar Recompensa</MudButton>
+    <MudTable Items="_rewards" T="RewardModel" Hover="true">
+        <HeaderContent>
+            <MudTh>Usuario ID</MudTh>
+            <MudTh>Puntos</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="display: none;">@context.RewardID</MudTd>
+            <MudTd>@context.UserID</MudTd>
+            <MudTd>@context.Points</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditReward(context)">Editar</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+
+    private List<RewardModel> _rewards;
+    private readonly RewardService _service = new();
+
+    private async void LoadRewards()
+    {
+        _rewards = await _service.GetAllRewards();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadRewards();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task EditReward(RewardModel reward)
+    {
+        var parameters = new DialogParameters
+        {
+            { "EditMode", true },
+            { "ExistingReward", reward }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddReward>("Dialog", parameters, options);
+        var result = await dialog.Result;
+        LoadRewards();
+    }
+
+    private async Task OpenAddRewardDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddReward>("Dialog", options);
+        var result = await dialog.Result;
+        LoadRewards();
+    }
+}
