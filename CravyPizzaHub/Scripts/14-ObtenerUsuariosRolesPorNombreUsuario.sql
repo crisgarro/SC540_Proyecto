@@ -12,3 +12,4 @@ BEGIN
     WHERE User_RoleID IS NOT NULL
     AND Username = p_UserName; -- Filter by UserName
 END;
+/

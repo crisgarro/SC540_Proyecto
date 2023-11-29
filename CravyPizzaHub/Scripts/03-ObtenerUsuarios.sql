@@ -16,3 +16,4 @@ BEGIN
         USERS.Enabled
     FROM USERS;
 END;
+/

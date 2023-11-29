@@ -7,3 +7,4 @@ BEGIN
     WHERE PromotionID = p_PromotionID;
     COMMIT;
 END DeletePromotion;
+/

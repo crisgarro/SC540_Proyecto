@@ -13,3 +13,4 @@ BEGIN
         PRODUCTS.categoryid
     FROM products;
 END;
+/

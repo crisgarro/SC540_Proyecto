@@ -6,3 +6,4 @@ BEGIN
     DELETE FROM Product_Reviews WHERE ReviewID = p_ReviewID;
     COMMIT;
 END DeleteReview;
+/
