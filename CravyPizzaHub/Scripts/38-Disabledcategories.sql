@@ -1,20 +1,28 @@
-create or replace NONEDITIONABLE PROCEDURE DisableCategories (
- p_CATEGORYID IN NUMBER,
-   p_CATEGORYNAME IN NVARCHAR2,
-    p_WasChanged OUT NUMBER
+CREATE OR REPLACE PROCEDURE DisableCategories(
+    pCategoryID IN NUMBER,
+    pEnabled IN NUMBER,
+    pIsUpdated OUT NUMBER
 )
 IS
 BEGIN
-    p_WasChanged := 0;
+    pIsUpdated := 0;
 
-    UPDATE categories
-    SET enabled = p_Enabled
-    WHERE CATEGORYID =p_CATEGORYID ;
+    SELECT COUNT(*)
+    INTO pIsUpdated
+    FROM Categories
+    WHERE CategoryID = pCategoryID;
 
-    IF SQL%ROWCOUNT > 0 THEN
-        p_WasChanged := 1;
+    IF pIsUpdated = 1 THEN
+        UPDATE Categories
+        SET Enabled = pEnabled
+        WHERE CategoryID = pCategoryID;
+
+        UPDATE Categories
+        SET Disabled_Date = CASE
+            WHEN pEnabled = 0 THEN SYSDATE
+            ELSE NULL
+        END
+        WHERE CategoryID = pCategoryID;
     END IF;
-
-    COMMIT;
-END DisableCategories;
+END;
 /
