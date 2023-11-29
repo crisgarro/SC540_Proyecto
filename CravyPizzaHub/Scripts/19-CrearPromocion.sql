@@ -10,3 +10,4 @@ BEGIN
     VALUES (p_PromotionName, p_DiscountAmount, p_StartDate, p_EndDate);
     COMMIT;
 END InsertPromotion;
+/

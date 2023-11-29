@@ -7,3 +7,4 @@ BEGIN
     SELECT PromotionID, PromotionName, DiscountAmount, StartDate, EndDate
     FROM Promotions;
 END GetAllPromotions;
+/
