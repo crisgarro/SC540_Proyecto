@@ -1,10 +1,16 @@
-create or replace NONEDITIONABLE PROCEDURE InsertCategories (
-  p_CATEGORYID IN NUMBER,
-    p_CATEGORYNAME IN NVARCHAR2
+CREATE OR REPLACE PROCEDURE InsertCategory (
+    p_CategoryName IN NVARCHAR2,
+    p_Enabled IN NUMBER,
+    p_CategoryID OUT NUMBER
 )
 IS
-BEGIN
-    INSERT INTO categories (categoryid, categoryname)
-    VALUES (p_CATEGORYID, p_CATEGORYNAME);
+BEGIN    
+    INSERT INTO Categories (
+        CategoryName, Enabled
+    ) VALUES (
+        p_CategoryName, p_Enabled
+    ) RETURNING CategoryID INTO p_CategoryID;
+
     COMMIT;
-END InsertCategories;
+END InsertCategory;
+/
