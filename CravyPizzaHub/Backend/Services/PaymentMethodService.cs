@@ -89,7 +89,7 @@ namespace Backend.Services
         }
 
 
-        public async Task<PaymentMethodModel> DisablPaymentMetho(PaymentMethodModel paymentMethodToDisable, bool state)
+        public async Task<PaymentMethodModel> DisablePaymentMethod(PaymentMethodModel paymentMethodToDisable, bool state)
         {
             int isUpdated = 0;
             using (OracleConnectionManager manager = new())

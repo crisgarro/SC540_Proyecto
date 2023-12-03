@@ -1,0 +1,113 @@
+﻿@page "/assign_user_role"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <MudText Typo="Typo.h3" GutterBottom="true">Asignar Roles a Usuarios</MudText>
+        <MudText Class="mb-8">Asignar roles a usuarios del sistema</MudText>    
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            @if (_showError)
+            {
+                <MudAlert Severity="Severity.Error" OnClose="@(() => _showError = false)">@_errorMessage</MudAlert>
+            }
+            <MudSelect Label="Usuario" @bind-Value="_selectedUserId" RequiredError="Requerido!" Required="true">
+                @foreach (var user in _userList)
+                {
+                    <MudSelectItem T="int" Value="@user.UserID">@user.Username</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect Label="Rol" @bind-Value="_selectedRoleId" RequiredError="Requerido!" Required="true">
+                @foreach (var role in _roleList)
+                {
+                    <MudSelectItem T="int" Value="@role.RoleID">@role.RolName</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+        <DialogActions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AssignUserRole1">Asignar Rol</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseDialog">Cancelar</MudButton>
+        </DialogActions>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    private List<UserModel> _userList;
+    private List<RolModel> _roleList;
+    private List<UserRoleModel> _userRoleList;
+
+    private readonly UserService _userService = new();
+    private readonly RoleService _roleService = new();
+    private readonly UserRoleService _userRoleService = new();
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    private int _selectedUserId;
+    private int _selectedRoleId;
+
+    private bool _showError;
+    private string _errorMessage;
+
+    private async Task LoadData()
+    {
+        _userList = await _userService.GetAllUsers();
+        _roleList = await _roleService.GetAllRoles();
+        _showError = false;
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task AssignUserRole1()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            if (_selectedUserId != 0 && _selectedRoleId != 0)
+            {
+                var userRol = new UserRoleModel { RoleId = _selectedRoleId, UserId = _selectedUserId };
+                var result = await _userRoleService.AssignUserRol(userRol);
+                if (result > 0)
+                {
+                    DialogIntance.Close(DialogResult.Ok(true));
+                }
+                else if (result == -1)
+                {
+                    raiseException("No se puede asignar el usuario al mismo rol");
+                    
+                }
+                else
+                {
+                    raiseException("Ocurio un error al tratar de asignar el rol");
+                }
+            }
+            else
+            {
+                raiseException("Debe seleccionar un Usuario y un Rol");
+            }
+        }
+       
+    }
+
+    private void raiseException(string message)
+    {
+        _errorMessage = message;
+        _showError = true;
+    }
+
+    private void CloseDialog()
+    {
+        DialogIntance.Close(DialogResult.Ok(true));
+    }
+}

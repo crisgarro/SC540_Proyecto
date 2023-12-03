@@ -72,7 +72,7 @@
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<AddPaymentMethod>("Dialog", options);
+        var dialog = DialogService.Show<AddEditPaymentMethod>("Dialog", options);
         var result = await dialog.Result;
         await LoadPaymentMethods();
     }
@@ -87,7 +87,7 @@
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<AddPaymentMethod>("Dialog", parameters, options);
+        var dialog = DialogService.Show<AddEditPaymentMethod>("Dialog", parameters, options);
         var result = await dialog.Result;
         await LoadPaymentMethods();
     }

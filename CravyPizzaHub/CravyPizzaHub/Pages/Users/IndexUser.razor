@@ -4,96 +4,95 @@
 @inject IDialogService DialogService
 
 <MudContainer>
-    <MudText Typo="Typo.h3" GutterBottom="true">Administracion de Usuarios</MudText>
-    <MudText Class="mb-8">Aqui se desplegara una lista de los usuarios en el sistema</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddUserDialog">Agregar Usuario</MudButton>
-    <MudTable Items="_users" T="UserModel" Hover="true">
-        <HeaderContent>                        
-            <MudTh>Nombre Usuario</MudTh>
-            <MudTh>Nombre</MudTh>
-            <MudTh>Apellido</MudTh>
-            <MudTh>Correo</MudTh>
-            <MudTh></MudTh> 
-        </HeaderContent>
-        <RowTemplate>            
-            <MudTd Style="display: none;">@context.UserID</MudTd>
-            <MudTd>@context.Username</MudTd>
-            <MudTd>@context.Email</MudTd>
-            <MudTd>@context.FirstName</MudTd>
-            <MudTd>@context.LastName</MudTd>
-            <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => EditUser(context)">Editar</MudButton>
-                @if (context.Enabled)
-                {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => DisableUser(context, false)">Deshabilitar</MudButton>
-                }
-                else
-                {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Success" OnClick="() => DisableUser(context, true)">Habilitar</MudButton>
-                }
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudText Typo="Typo.h3" GutterBottom="true">Lista de Usuarios</MudText>
+    <MudText Class="mb-8">Lista de Usuarios del Sistema</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AddUser">Nuevo Usuario</MudButton>
+    <MudDataGrid T="UserModel" Items="@_userList" QuickFilter="@QuickFilter" Hideable="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Usuarios</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+            </MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Hidden="true" Property="x => x.UserID" />
+            <PropertyColumn Title="Usuario" Property="x => x.Username" />            
+            <PropertyColumn Title="Email" Property="x => x.Email" />
+            <PropertyColumn Title="Nombre" Property="x => x.FirstName" />
+            <PropertyColumn Title="Apellido" Property="x => x.LastName" />            
+            <PropertyColumn Title="Teléfono" Property="x => x.Phone" />
+            <PropertyColumn Title="Último Inicio de Sesión" Property="x => x.Last_Login" />
+            <PropertyColumn Title="Cambiar Contraseña" Property="x => x.Require_Change_Password">
+                <CellTemplate>
+                    @if (@context.Item.Require_Change_Password)
+                    {
+                        <span>Si</span>
+                    }
+                    else
+                    {
+                        <span>No</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Title="Acción" Property="x => x.Enabled">
+                <CellTemplate>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditUser(@context.Item))">Editar</MudButton>
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="UserModel" PageSizeOptions="new int[] { 20, 50 }" RowsPerPageString="Registros Por Pagina" />
+        </PagerContent>
+    </MudDataGrid>
 </MudContainer>
 
 @code {
+    private IEnumerable<UserModel> _userList;
+    private readonly UserService _userService = new();
+    private string _searchString;
 
-    private List<UserModel> _users;
-    private readonly UserService _service = new();
-
-    private async void LoadUsers()
+    private async Task LoadUsers()
     {
-        _users = await _service.GetAllUsers();
-        if (_users.Count > 0)
-        {
-            StateHasChanged();
-        }
+        _userList = await _userService.GetAllUsers();
     }
+
+    private Func<UserModel, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.Username.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+            x.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        LoadUsers();
-        await base.OnInitializedAsync();
+        await LoadUsers();
     }
 
-    private async Task EditUser(UserModel user)
+    private async Task AddUser()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddEditUser>("Dialog", options);
+        var result = await dialog.Result;
+        await LoadUsers();
+    }
+
+    private async Task EditUser(UserModel model)
     {
         var parameters = new DialogParameters
         {
             { "EditMode", true },
-            { "ExistingUser", user }
+            { "ExistingRecord", model }
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<AddUser>("Dialog", parameters, options);
+        var dialog = DialogService.Show<AddEditUser>("Dialog", parameters, options);
         var result = await dialog.Result;
-        LoadUsers();
-
+        await LoadUsers();
     }
-
-    private async void DisableUser(UserModel user, bool state)
-    {           
-        var action = state ? "habilitado" : "deshabilitado";
-        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea establecer al usuario {user.Username} como {action}?", yesText: "Si", cancelText: "Cancelar");
-        if (dialogResult is not null)
-        {
-            var dialogMessage = "";
-            var result = await _service.DisableUser(user, state);
-            dialogMessage = result is not null ? $"El usuario {user.Username} se ha {action} con exito" : $"El usuario {user.Username} no se ha {action}";
-
-            var dialog2 = await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
-            LoadUsers();
-        }
-    }
-
-    private async Task OpenAddUserDialog()
-    {
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
-
-
-        var dialog = DialogService.Show<AddUser>("Dialog", options);
-        var result = await dialog.Result;
-        LoadUsers();
-    }
-
 }

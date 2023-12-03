@@ -1,0 +1,95 @@
+﻿@page "/add_edit_role"
+@using Backend.Models
+@using Backend.Services
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Rol" : "Crear Rol")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="model.RoleID" />
+            <MudTextField Label="Nombre del Rol" @bind-Value="model.RolName" RequiredError="Requerido!" Required="true"/>
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateRole : SaveRole)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseRoleDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } 
+
+    [Parameter]
+    public RolModel ExistingRecord { get; set; } 
+
+    private RolModel model;
+    private readonly RoleService _service = new();
+
+    MudTextField<string> _roleNameFieldValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            model = new RolModel
+            {
+                RoleID = ExistingRecord.RoleID,
+                RolName = ExistingRecord.RolName,
+            };
+        }
+        else
+        {
+            model = new RolModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveRole()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.CreateRole(model);
+
+            if (result >= 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar el rol");
+            }
+        }
+    }
+
+    private async void UpdateRole()
+    {        
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.UpdateRole(model);
+
+            DialogIntance.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void CloseRoleDialog()
+    {
+        DialogIntance.Cancel();
+    }
+}
