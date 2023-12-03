@@ -1,0 +1,99 @@
+﻿@page "/add_edit_category"
+@using Backend.Models
+@using Backend.Services
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Categoría" : "Crear Categoría")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="model.CategoryID" />
+            <MudTextField Label="Nombre de la Categoría" @bind-Value="model.CategoryName" RequiredError="Requerido!" Required="true"/>
+            <MudSelect Label="Habilitado" @bind-Value="model.Enabled">
+                <MudSelectItem Value="1">Habilitado</MudSelectItem>
+                <MudSelectItem Value="0">Deshabilitado</MudSelectItem>
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateCategory : SaveCategory)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseCategoryDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } 
+
+    [Parameter]
+    public CategoryModel ExistingRecord { get; set; } 
+
+    private CategoryModel model;
+    private readonly CategoryService _service = new();
+
+    MudTextField<string> _categoryNameValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            model = new CategoryModel
+            {
+                CategoryID = ExistingRecord.CategoryID,
+                CategoryName = ExistingRecord.CategoryName,
+                Enabled = ExistingRecord.Enabled,
+            };
+        }
+        else
+        {
+            model = new CategoryModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveCategory()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.CreateCategory(model);
+
+            if (result >= 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar la categoría");
+            }
+        }
+    }
+
+    private async void UpdateCategory()
+    {        
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.UpdateCategory(model);
+
+            DialogIntance.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void CloseCategoryDialog()
+    {
+        DialogIntance.Cancel();
+    }
+}
