@@ -1,4 +1,4 @@
-﻿@page "/user_roles"
+﻿@page "/user_roles_list"
 @using Backend.Models
 @using Backend.Services
 @inject IDialogService DialogService
@@ -61,7 +61,7 @@
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<AssignUserRole>("Dialog", options);
+       var dialog = DialogService.Show<AssignUserRole>("Dialog", options);
         var result = await dialog.Result;
         await LoadUserRoles();
     }

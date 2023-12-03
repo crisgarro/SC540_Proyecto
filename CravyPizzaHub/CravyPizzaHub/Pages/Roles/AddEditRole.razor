@@ -1,21 +1,19 @@
-﻿@page "/add_edit_user_role"
+﻿@page "/add_edit_role"
 @using Backend.Models
 @using Backend.Services
 
 <MudDialog Width="400px">
     <DialogContent>
-        <DialogTitle>@(EditMode ? "Editar Rol de Usuario" : "Crear Rol de Usuario")</DialogTitle>
+        <DialogTitle>@(EditMode ? "Editar Rol" : "Crear Rol")</DialogTitle>
         <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
-            <input type="hidden" @bind="model.UserRoleId" />
-            
-            <MudTextField Label="ID de Usuario" @bind-Value="model.UserId" RequiredError="Requerido!" Required="true"/>
-            <MudTextField Label="ID de Rol" @bind-Value="model.RoleId" RequiredError="Requerido!" Required="true"/>
+            <input type="hidden" @bind="model.RoleID" />
+            <MudTextField Label="Nombre del Rol" @bind-Value="model.RolName" RequiredError="Requerido!" Required="true"/>
         </MudForm>
 
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateUserRole : SaveUserRole)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseUserRoleDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateRole : SaveRole)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseRoleDialog">Cancelar</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -31,13 +29,12 @@
     public bool EditMode { get; set; } 
 
     [Parameter]
-    public UserRoleModel ExistingRecord { get; set; } 
+    public RolModel ExistingRecord { get; set; } 
 
-    private UserRoleModel model;
-    private readonly UserRoleService _service = new();
+    private RolModel model;
+    private readonly RoleService _service = new();
 
-    MudTextField<int> _userIdFieldValidation;
-    MudTextField<int> _roleIdFieldValidation;
+    MudTextField<string> _roleNameFieldValidation;
     MudForm form_reference;
     bool _isValidationSuccess;
     string[] validation_errors = { };
@@ -46,28 +43,27 @@
     {
         if (EditMode)
         {
-            model = new UserRoleModel
+            model = new RolModel
             {
-                UserRoleId = ExistingRecord.UserRoleId,
-                UserId = ExistingRecord.UserId,
-                RoleId = ExistingRecord.RoleId
+                RoleID = ExistingRecord.RoleID,
+                RolName = ExistingRecord.RolName,
             };
         }
         else
         {
-            model = new UserRoleModel();
+            model = new RolModel();
         }
 
         await base.OnInitializedAsync();
     }
 
-    private async void SaveUserRole()
+    private async void SaveRole()
     {
         await form_reference.Validate();
 
         if (_isValidationSuccess)
         {
-            var result = await _service.AssignUserRol(model);
+            var result = await _service.CreateRole(model);
 
             if (result >= 1)
             {
@@ -75,24 +71,24 @@
             }
             else
             {
-                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar el rol de usuario");
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar el rol");
             }
         }
     }
 
-    private async void UpdateUserRole()
+    private async void UpdateRole()
     {        
         await form_reference.Validate();
 
         if (_isValidationSuccess)
         {
-            var result = await _service.RevokeUserRol(model.UserRoleId); 
+            var result = await _service.UpdateRole(model);
 
             DialogIntance.Close(DialogResult.Ok(true));
         }
     }
 
-    private void CloseUserRoleDialog()
+    private void CloseRoleDialog()
     {
         DialogIntance.Cancel();
     }

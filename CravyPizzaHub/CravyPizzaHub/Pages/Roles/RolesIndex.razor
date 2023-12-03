@@ -16,7 +16,7 @@
         </ToolBarContent>
         <Columns>
             <PropertyColumn Hidden="true" Property="x => x.RoleID" />
-            <PropertyColumn Title="Nombre del Rol" Property="x => x.RoleName" />
+            <PropertyColumn Title="Nombre del Rol" Property="x => x.RolName" />
             <PropertyColumn Title="Accion" Property="x => x.RoleID">
                 <CellTemplate>
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditRol(@context.Item.RoleID))">Editar</MudButton>
@@ -46,7 +46,7 @@
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
 
-        if (x.RoleName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.RolName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;
@@ -87,12 +87,12 @@
 
     private async Task DeleteRol(RolModel rol)
     {
-        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea Eliminar el Rol:  {rol.RoleName}?", yesText: "Si", cancelText: "Cancelar");
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea Eliminar el Rol:  {rol.RolName}?", yesText: "Si", cancelText: "Cancelar");
         if (dialogResult is not null)
         {
             var dialogMessage = "";            
             var result = await _roleService.DeleteRole(rol.RoleID);
-            dialogMessage = result ? $"El rol {rol.RoleName} fue eliminado" : $"El rol {rol.RoleName} no se ha eliminado al estar asociado a usuarios";
+            dialogMessage = result ? $"El rol {rol.RolName} fue eliminado" : $"El rol {rol.RolName} no se ha eliminado al estar asociado a usuarios";
 
             var dialog2 = await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
             await LoadRoles();

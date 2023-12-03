@@ -6,7 +6,7 @@ namespace Backend.Services
 {
     public class RoleService
     {
-        public async Task<IEnumerable<RolModel>> GetAllRoles()
+        public async Task<List<RolModel>> GetAllRoles()
         {
             List<RolModel> roles = new List<RolModel>();
 
@@ -24,7 +24,7 @@ namespace Backend.Services
                             RolModel role = new RolModel
                             {
                                 RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                                RoleName = reader.GetString(reader.GetOrdinal("RoleName"))
+                                RolName = reader.GetString(reader.GetOrdinal("RoleName"))
                             };
                             roles.Add(role);
                         }
@@ -44,7 +44,7 @@ namespace Backend.Services
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add("p_RoleName", OracleDbType.NVarchar2).Value = newRole.RoleName;
+                    command.Parameters.Add("p_RoleName", OracleDbType.NVarchar2).Value = newRole.RolName;
 
                     OracleParameter p_RoleID = new OracleParameter("p_RoleID", OracleDbType.Int32);
                     p_RoleID.Direction = ParameterDirection.Output;
@@ -68,7 +68,7 @@ namespace Backend.Services
                     command.CommandType = CommandType.StoredProcedure;
 
                     command.Parameters.Add("p_RoleID", OracleDbType.Int32).Value = updatedRole.RoleID;
-                    command.Parameters.Add("p_RoleName", OracleDbType.NVarchar2).Value = updatedRole.RoleName;
+                    command.Parameters.Add("p_RoleName", OracleDbType.NVarchar2).Value = updatedRole.RolName;
 
                     OracleParameter wasUpdated = new OracleParameter("p_WasUpdated", OracleDbType.Int32);
                     wasUpdated.Direction = ParameterDirection.Output;

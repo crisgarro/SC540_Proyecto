@@ -14,5 +14,10 @@
         public bool Require_Change_Password { get; set; }
         public bool Enabled { get; set; }
         public DateTime Disabled_Date { get; set; }
+
+        public override string ToString()
+        {
+            return Username;
+        }
     }
 }

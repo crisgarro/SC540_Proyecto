@@ -18,5 +18,6 @@
         /// Overriding GetHashCode is essential for use with Select and Table because they use HashSets internally
         /// </summary>
         public override int GetHashCode() => $"{UserId}-{RoleId}".GetHashCode();
+
     }
 }

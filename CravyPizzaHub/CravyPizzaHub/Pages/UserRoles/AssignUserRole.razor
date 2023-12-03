@@ -1,62 +1,66 @@
-﻿@page "/user_roles"
+﻿@page "/assign_user_role"
 @using Backend.Models
 @using Backend.Services
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-<MudContainer>
-    <MudText Typo="Typo.h3" GutterBottom="true">Asignar Roles a Usuarios</MudText>
-    <MudText Class="mb-8">Asignar roles a usuarios del sistema</MudText>
-
-    <!-- User Dropdown -->
-    <MudSelect Label="Usuario" @bind-Value="_selectedUserId">
-        @foreach (var user in _userList)
-        {
-            <MudSelectItem T="int" Text="@user.Username" Value="@user.UserID" />
-        }
-    </MudSelect>
-
-    <!-- Role Dropdown -->
-    <MudSelect Label="Rol" @bind-Value="_selectedRoleId">
-        @foreach (var role in _roleList)
-        {
-            <MudSelectItem T="int" Text="@role.RoleName" Value="@role.RoleId" />
-        }
-    </MudSelect>
-
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AssignUserRole">Asignar Rol</MudButton>
-
-    <!-- Display User Roles -->
-    <MudDataGrid T="UserRoleModel" Items="@_userRoleList" Hideable="true">
-        <Columns>
-            <PropertyColumn Hidden="true" Property="x => x.UserRoleId" />
-            <PropertyColumn Title="Usuario" Property="x => x.UserName" />
-            <PropertyColumn Title="Rol" Property="x => x.RolName" />
-            <PropertyColumn Title="Acción" Property="x => x.UserRoleId">
-                <CellTemplate>
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RemoveUserRole(@context.Item))">Quitar Rol</MudButton>
-                </CellTemplate>
-            </PropertyColumn>
-        </Columns>
-    </MudDataGrid>
-</MudContainer>
+<MudDialog Width="400px">
+    <DialogContent>
+        <MudText Typo="Typo.h3" GutterBottom="true">Asignar Roles a Usuarios</MudText>
+        <MudText Class="mb-8">Asignar roles a usuarios del sistema</MudText>    
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            @if (_showError)
+            {
+                <MudAlert Severity="Severity.Error" OnClose="@(() => _showError = false)">@_errorMessage</MudAlert>
+            }
+            <MudSelect Label="Usuario" @bind-Value="_selectedUserId" RequiredError="Requerido!" Required="true">
+                @foreach (var user in _userList)
+                {
+                    <MudSelectItem T="int" Value="@user.UserID">@user.Username</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect Label="Rol" @bind-Value="_selectedRoleId" RequiredError="Requerido!" Required="true">
+                @foreach (var role in _roleList)
+                {
+                    <MudSelectItem T="int" Value="@role.RoleID">@role.RolName</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+        <DialogActions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AssignUserRole1">Asignar Rol</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseDialog">Cancelar</MudButton>
+        </DialogActions>
+    </DialogContent>
+</MudDialog>
 
 @code {
-    private IEnumerable<UserModel> _userList;
-    private IEnumerable<RolModel> _roleList;
-    private IEnumerable<UserRoleModel> _userRoleList;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    private List<UserModel> _userList;
+    private List<RolModel> _roleList;
+    private List<UserRoleModel> _userRoleList;
 
     private readonly UserService _userService = new();
     private readonly RoleService _roleService = new();
     private readonly UserRoleService _userRoleService = new();
 
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
     private int _selectedUserId;
     private int _selectedRoleId;
+
+    private bool _showError;
+    private string _errorMessage;
 
     private async Task LoadData()
     {
         _userList = await _userService.GetAllUsers();
         _roleList = await _roleService.GetAllRoles();
-        _userRoleList = await _userRoleService.GetAllUserRoles();
+        _showError = false;
+
     }
 
     protected override async Task OnInitializedAsync()
@@ -64,40 +68,46 @@
         await LoadData();
     }
 
-    private async Task AssignUserRole()
+    private async Task AssignUserRole1()
     {
-        if (_selectedUserId != 0 && _selectedRoleId != 0)
-        {
-            var userRol = new UserRoleModel { RoleId = _selectedRoleId, UserId = _selectedUserId };
-            var result = await _userRoleService.AssignUserRol(userRol);
-            if (result > 0)
-            {
-                await LoadData();
-                _selectedUserId = 0;
-                _selectedRoleId = 0;
-            }
+        await form_reference.Validate();
 
-        }
-        else
+        if (_isValidationSuccess)
         {
-            // Display a message indicating that both user and role must be selected
-        }
-    }
-
-    private async Task RemoveUserRole(UserRoleModel userRole)
-    {
-        var dialogResult = await DialogService.ShowMessageBox("Confirmación", $"¿Está seguro que desea quitar el rol {userRole.RoleName} al usuario {userRole.UserName}?", yesText: "Sí", cancelText: "Cancelar");
-        if (dialogResult is not null)
-        {
-            var result = await _userRoleService.RevokeUserRol(userRole.UserRoleId);
-            if (result)
+            if (_selectedUserId != 0 && _selectedRoleId != 0)
             {
-                await LoadData();
+                var userRol = new UserRoleModel { RoleId = _selectedRoleId, UserId = _selectedUserId };
+                var result = await _userRoleService.AssignUserRol(userRol);
+                if (result > 0)
+                {
+                    DialogIntance.Close(DialogResult.Ok(true));
+                }
+                else if (result == -1)
+                {
+                    raiseException("No se puede asignar el usuario al mismo rol");
+                    
+                }
+                else
+                {
+                    raiseException("Ocurio un error al tratar de asignar el rol");
+                }
             }
             else
             {
-                // Handle removal failure
+                raiseException("Debe seleccionar un Usuario y un Rol");
             }
         }
+       
+    }
+
+    private void raiseException(string message)
+    {
+        _errorMessage = message;
+        _showError = true;
+    }
+
+    private void CloseDialog()
+    {
+        DialogIntance.Close(DialogResult.Ok(true));
     }
 }

@@ -6,7 +6,7 @@ namespace Backend.Services
 {
     public class UserRoleService
     {
-        public async Task<IEnumerable<UserRoleModel>> GetAllUserRoles()
+        public async Task<List<UserRoleModel>> GetAllUserRoles()
         {
             List<UserRoleModel> userRoles = new List<UserRoleModel>();
 
@@ -43,26 +43,42 @@ namespace Backend.Services
         public async Task<int> AssignUserRol(UserRoleModel newUserRole)
         {
             int userRoleId = 0;
-            using (OracleConnectionManager manager = new())
+
+            try
             {
-                await using (OracleCommand command = new OracleCommand("AssignRole", manager.GetConnection()))
+                using (OracleConnectionManager manager = new())
                 {
-                    command.CommandType = CommandType.StoredProcedure;
+                    await using (OracleCommand command = new OracleCommand("AssignRole", manager.GetConnection()))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add("p_UserID", OracleDbType.Int32).Value = newUserRole.UserId;
-                    command.Parameters.Add("p_RoleID", OracleDbType.Int32).Value = newUserRole.RoleId;
+                        command.Parameters.Add("p_UserID", OracleDbType.Int32).Value = newUserRole.UserId;
+                        command.Parameters.Add("p_RoleID", OracleDbType.Int32).Value = newUserRole.RoleId;
 
-                    OracleParameter p_UserRoleID = new OracleParameter("p_UserRoleID", OracleDbType.Int32);
-                    p_UserRoleID.Direction = ParameterDirection.Output;
-                    command.Parameters.Add(p_UserRoleID);
+                        OracleParameter p_UserRoleID = new OracleParameter("p_UserRoleID", OracleDbType.Int32);
+                        p_UserRoleID.Direction = ParameterDirection.Output;
+                        command.Parameters.Add(p_UserRoleID);
 
-                    await command.ExecuteNonQueryAsync();
-                    userRoleId = Convert.ToInt32(p_UserRoleID.Value.ToString());
+                        await command.ExecuteNonQueryAsync();
+                        userRoleId = Convert.ToInt32(p_UserRoleID.Value.ToString());
+                    }
                 }
+            }
+            catch (OracleException ex)
+            {
+                if (ex.Number == 1)
+                {
+                    return -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                return 0;
             }
 
             return userRoleId;
         }
+
 
         public async Task<bool> RevokeUserRol(int userRoleId)
         {
