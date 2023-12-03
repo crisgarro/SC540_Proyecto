@@ -1,4 +1,4 @@
-﻿@page "/user_list"
+﻿@page "/user_list2"
 @using Backend.Models
 @using Backend.Services
 @inject IDialogService DialogService
@@ -65,7 +65,7 @@
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<AddUser>("Dialog", parameters, options);
+        var dialog = DialogService.Show<AddEditUser>("Dialog", parameters, options);
         var result = await dialog.Result;
         LoadUsers();
 
@@ -91,7 +91,7 @@
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
 
 
-        var dialog = DialogService.Show<AddUser>("Dialog", options);
+        var dialog = DialogService.Show<AddEditUser>("Dialog", options);
         var result = await dialog.Result;
         LoadUsers();
     }

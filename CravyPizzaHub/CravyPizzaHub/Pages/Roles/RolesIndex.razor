@@ -1,0 +1,101 @@
+﻿@page "/role_list"
+@using Backend.Models
+@using Backend.Services
+@inject IDialogService DialogService
+
+<MudContainer>
+    <MudText Typo="Typo.h3" GutterBottom="true">Lista de Roles</MudText>
+    <MudText Class="mb-8">Lista de Roles del Sistema</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AddRol">Nuevo Rol</MudButton>
+    <MudDataGrid T="RolModel" Items="@_roleList" QuickFilter="@QuickFilter" Hideable="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Roles</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+            </MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Hidden="true" Property="x => x.RoleID" />
+            <PropertyColumn Title="Nombre del Rol" Property="x => x.RoleName" />
+            <PropertyColumn Title="Accion" Property="x => x.RoleID">
+                <CellTemplate>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditRol(@context.Item.RoleID))">Editar</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => DeleteRol(@context.Item))">Eliminar</MudButton>
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="RolModel" PageSizeOptions="new int[] { 20, 50 }" RowsPerPageString="Registros Por Pagina" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private IEnumerable<RolModel> _roleList;
+    private readonly RoleService _roleService = new();
+    private string _searchString;
+    private List<int> _selectedRoleIds = new List<int>();
+
+    private async Task LoadRoles()
+    {
+        _roleList = await _roleService.GetAllRoles();
+    }
+
+    private Func<RolModel, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.RoleName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoles();
+    }
+
+    private async Task AddRol()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<AddEditRole>("Dialog", options);
+        var result = await dialog.Result;
+        await LoadRoles();
+    }
+
+    private async Task EditRol(int roleId)
+    {
+        var role = _roleList.FirstOrDefault(r => r.RoleID == roleId);
+
+        if (role != null)
+        {
+            var parameters = new DialogParameters
+            {
+                { "EditMode", true },
+                { "ExistingRecord", role }
+            };
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+
+            var dialog = DialogService.Show<AddEditRole>("Dialog", parameters, options);
+            var result = await dialog.Result;
+            await LoadRoles();
+        }
+    }
+
+    private async Task DeleteRol(RolModel rol)
+    {
+        var dialogResult = await DialogService.ShowMessageBox("Confirmacion", $"Esta seguro que desea Eliminar el Rol:  {rol.RoleName}?", yesText: "Si", cancelText: "Cancelar");
+        if (dialogResult is not null)
+        {
+            var dialogMessage = "";            
+            var result = await _roleService.DeleteRole(rol.RoleID);
+            dialogMessage = result ? $"El rol {rol.RoleName} fue eliminado" : $"El rol {rol.RoleName} no se ha eliminado al estar asociado a usuarios";
+
+            var dialog2 = await DialogService.ShowMessageBox("Deshabilitar usuario", dialogMessage, yesText: "Ok");
+            await LoadRoles();
+        }               
+    }
+}

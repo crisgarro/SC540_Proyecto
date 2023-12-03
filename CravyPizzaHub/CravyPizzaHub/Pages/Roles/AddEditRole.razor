@@ -1,0 +1,99 @@
+﻿@page "/add_edit_user_role"
+@using Backend.Models
+@using Backend.Services
+
+<MudDialog Width="400px">
+    <DialogContent>
+        <DialogTitle>@(EditMode ? "Editar Rol de Usuario" : "Crear Rol de Usuario")</DialogTitle>
+        <MudForm @ref="form_reference" @bind-IsValid="@_isValidationSuccess" @bind-Errors="@validation_errors">
+            <input type="hidden" @bind="model.UserRoleId" />
+            
+            <MudTextField Label="ID de Usuario" @bind-Value="model.UserId" RequiredError="Requerido!" Required="true"/>
+            <MudTextField Label="ID de Rol" @bind-Value="model.RoleId" RequiredError="Requerido!" Required="true"/>
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(EditMode ? UpdateUserRole : SaveUserRole)">@(EditMode ? "Actualizar" : "Guardar")</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseUserRoleDialog">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance DialogIntance { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; } 
+
+    [Parameter]
+    public UserRoleModel ExistingRecord { get; set; } 
+
+    private UserRoleModel model;
+    private readonly UserRoleService _service = new();
+
+    MudTextField<int> _userIdFieldValidation;
+    MudTextField<int> _roleIdFieldValidation;
+    MudForm form_reference;
+    bool _isValidationSuccess;
+    string[] validation_errors = { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EditMode)
+        {
+            model = new UserRoleModel
+            {
+                UserRoleId = ExistingRecord.UserRoleId,
+                UserId = ExistingRecord.UserId,
+                RoleId = ExistingRecord.RoleId
+            };
+        }
+        else
+        {
+            model = new UserRoleModel();
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SaveUserRole()
+    {
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.AssignUserRol(model);
+
+            if (result >= 1)
+            {
+                DialogIntance.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Error", "Se produjo un error al guardar el rol de usuario");
+            }
+        }
+    }
+
+    private async void UpdateUserRole()
+    {        
+        await form_reference.Validate();
+
+        if (_isValidationSuccess)
+        {
+            var result = await _service.RevokeUserRol(model.UserRoleId); 
+
+            DialogIntance.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void CloseUserRoleDialog()
+    {
+        DialogIntance.Cancel();
+    }
+}

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="Pages\FetchData.razor" />
+    <Content Remove="Pages\UserRoles\AssignRevokeUserRoles.razor" />
   </ItemGroup>
 
   <ItemGroup>
