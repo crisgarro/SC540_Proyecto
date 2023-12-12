@@ -1,0 +1,13 @@
+CREATE OR REPLACE VIEW product_category_view AS
+SELECT
+    p.PRODUCTID,
+    p.NAME AS PRODUCT_NAME,
+    p.DESCRIPTION,
+    p.PRICE,
+    p.STOCKQUANTITY,
+    c.CATEGORYID,
+    c.CATEGORYNAME AS CATEGORY_NAME
+FROM
+    products p
+JOIN
+    categories c ON p.CATEGORYID = c.CATEGORYID;
