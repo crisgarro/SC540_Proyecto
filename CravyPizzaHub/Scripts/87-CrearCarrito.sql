@@ -1,0 +1,10 @@
+CREATE OR REPLACE PROCEDURE InsertCart(
+    p_UserID IN NUMBER,
+    p_CartID OUT NUMBER
+)
+IS
+BEGIN
+    INSERT INTO Cart (UserID)
+    VALUES (p_UserID)
+    RETURNING CartID INTO p_CartID;
+END;
