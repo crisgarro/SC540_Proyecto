@@ -4,3 +4,4 @@ SELECT U.UserID, U.Username, U.Email, U.FirstName, U.LastName, U.Address, U.Phon
 FROM Users U
 LEFT JOIN User_Roles UR ON U.UserID = UR.UserID
 LEFT JOIN Roles R ON UR.RoleID = R.RoleID;
+/

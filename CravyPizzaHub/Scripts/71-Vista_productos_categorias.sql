@@ -11,3 +11,4 @@ FROM
     products p
 JOIN
     categories c ON p.CATEGORYID = c.CATEGORYID;
+/

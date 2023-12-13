@@ -10,3 +10,4 @@ FROM
     orders
 WHERE
     TRUNC(ORDERDATE) = TRUNC(SYSDATE); -- Filtrar por la fecha actual (puedes ajustar esta condición según tus necesidades)
+/

@@ -16,3 +16,4 @@ BEGIN
          RAISE duplicate_key;
    END;
 END AssignRole;
+/

@@ -16,3 +16,4 @@ JOIN
     promotions p ON ap.PROMOTIONID = p.PROMOTIONID
 JOIN
     users u ON o.USERID = u.USERID;
+/

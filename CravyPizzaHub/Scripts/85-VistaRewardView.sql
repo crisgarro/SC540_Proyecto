@@ -1,4 +1,5 @@
 -- Crear la vista RewardsView
-CREATE VIEW RewardsView AS
+CREATE OR REPLACE VIEW RewardsView AS
 SELECT RewardId, UserID, Points
 FROM Rewards;
+/

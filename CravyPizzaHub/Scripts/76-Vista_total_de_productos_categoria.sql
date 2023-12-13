@@ -6,3 +6,4 @@ FROM
     products
 GROUP BY
     CATEGORYID;
+/
