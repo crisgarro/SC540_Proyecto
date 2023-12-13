@@ -1,0 +1,8 @@
+CREATE OR REPLACE PROCEDURE DeleteCart(
+    p_CartID IN NUMBER
+)
+IS
+BEGIN
+    DELETE FROM Cart
+    WHERE CartID = p_CartID;
+END;
