@@ -12,3 +12,4 @@ JOIN
     cart_items ci ON c.CARTID = ci.CARTID
 JOIN
     users u ON c.USERID = u.USERID;
+/

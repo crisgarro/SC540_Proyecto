@@ -6,3 +6,4 @@ BEGIN
     OPEN p_ordenes FOR
     SELECT * FROM Orders;
 END GetAllOrders;
+/

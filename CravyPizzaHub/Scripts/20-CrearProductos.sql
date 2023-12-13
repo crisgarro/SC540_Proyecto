@@ -1,4 +1,4 @@
-create or replace NONEDITIONABLE PROCEDURE InsertProduct (
+create or replace PROCEDURE InsertProduct (
     p_name IN NVARCHAR2,
     p_description IN NVARCHAR2,
     p_price IN NUMBER,
@@ -27,3 +27,4 @@ BEGIN
             END IF;
     END;
 END InsertProduct;
+/

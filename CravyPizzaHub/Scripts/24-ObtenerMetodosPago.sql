@@ -6,3 +6,4 @@ BEGIN
     OPEN p_Result FOR
     SELECT PaymentMethodID, PaymentMethodName, Enabled FROM Payment_Methods WHERE Enabled = 1;
 END GetAllPaymentMethods;
+/

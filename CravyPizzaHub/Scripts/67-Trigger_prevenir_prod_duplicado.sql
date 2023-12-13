@@ -1,4 +1,4 @@
-create or replace NONEDITIONABLE TRIGGER prevent_duplicate_product
+create or replace TRIGGER prevent_duplicate_product
 BEFORE INSERT ON products
 FOR EACH ROW
 DECLARE
@@ -15,3 +15,4 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'Ya existe un producto con el mismo nombre en la tabla.');
     END IF;
 END;
+/

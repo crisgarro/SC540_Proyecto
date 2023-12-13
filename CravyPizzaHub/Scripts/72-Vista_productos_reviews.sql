@@ -11,3 +11,4 @@ FROM
     product_reviews pr
 JOIN
     products p ON pr.PRODUCTID = p.PRODUCTID;
+/

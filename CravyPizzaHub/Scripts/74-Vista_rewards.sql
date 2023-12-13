@@ -11,3 +11,4 @@ FROM
     users u
 JOIN
     rewards r ON u.USERID = r.USERID;
+/
