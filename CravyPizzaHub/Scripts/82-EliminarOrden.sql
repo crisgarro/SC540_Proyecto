@@ -1,0 +1,8 @@
+CREATE OR REPLACE PROCEDURE DeleteOrder(
+    p_OrderID IN NUMBER
+)
+IS
+BEGIN
+    DELETE FROM Orders
+    WHERE OrderID = p_OrderID;
+END;
